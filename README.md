@@ -40,43 +40,21 @@ npm run build
 npm run preview
 ```
 
-## 4. Environment Variables
+## 4. פתיחה וסגירה של האתר
 
-בדיקות המלון עצמן לא דורשות משתני סביבה.
+אין שם משתמש ואין סיסמה. המצב נקבע רק בקובץ `src/config/siteStatus.ts`:
 
-מנגנון Admin (פתיחה/סגירה של Holikar) כן דורש משתנים בשרת. הסיסמה לא נשמרת בקוד ולא ב-Frontend.
-
-העתיקו `.env.example` ל-`.env` מקומי (הקובץ `.env` לא עולה ל-GitHub):
-
-```text
-HOLIKAR_ADMIN_USER=
-HOLIKAR_ADMIN_PASSWORD_HASH=
-HOLIKAR_SESSION_SECRET=
-UPSTASH_REDIS_REST_URL=
-UPSTASH_REDIS_REST_TOKEN=
+```ts
+export const SITE_ENABLED = true
 ```
 
-יצירת Hash לסיסמה (בלי לכתוב את הסיסמה בקוד):
+`true` פותח את Holikar. `false` מציג רק את מסך הסגירה, בלי בדיקות ובלי ארכיון. אחרי השינוי צריך Build והעלאה ל-GitHub.
 
-```bash
-npm run admin:hash -- "your-strong-password"
-```
-
-הדביקו את הפלט ב-`HOLIKAR_ADMIN_PASSWORD_HASH`.  
-`HOLIKAR_SESSION_SECRET` צריך מחרוזת ארוכה ואקראית (למשל 32 תווים).
-
-ב-Vercel: Settings → Environment Variables — אותם שמות, בלי לשים סיסמה גלויה.
-
-עבור מצב סגור/פתוח **גלובלי בין מכשירים** ב-Vercel חובה Redis (Upstash חינמי או Vercel KV). בלי זה המצב עלול להישמר רק בזיכרון של שרת בודד.
+אין צורך במשתני סביבה.
 
 ## 5. Database
 
 בדיקות, תבניות, סטטוסים והגדרות נשמרים ב-IndexedDB בדפדפן של המשתמש (Dexie). זה ארכיון מקומי לכל מכשיר.
-
-מצב הפעלה/כיבוי של Holikar (Admin Lock) נשמר ב-Backend:
-
-- מקומית: קובץ `data/system-lock.json` (לא עולה ל-GitHub)
-- ב-Vercel: Redis לפי משתני הסביבה למעלה
 
 אין צורך במסד נתונים נפרד לבדיקות החדרים.
 
@@ -87,8 +65,7 @@ npm run admin:hash -- "your-strong-password"
 1. ב-Vercel: **Add New… → Project**.
 2. בוחרים את ה-Repository של Holikar.
 3. Framework Preset: **Vite** (אוטומטי; מוגדר גם ב-`vercel.json`).
-4. מגדירים Environment Variables של Admin (ראה סעיף 4). בלי הסיסמה עצמה.
-5. Deploy.
+4. Deploy.
 
 הקובץ `vercel.json` כבר מגדיר:
 

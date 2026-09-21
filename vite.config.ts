@@ -1,11 +1,10 @@
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
-import { holikarApiPlugin } from './server/vite-plugin.ts'
 
 export default defineConfig({
   base: '/',
-  plugins: [react(), tailwindcss(), holikarApiPlugin()],
+  plugins: [react(), tailwindcss()],
   build: {
     outDir: 'dist',
     sourcemap: false,

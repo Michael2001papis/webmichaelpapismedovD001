@@ -1,6 +1,5 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { downloadBackup, restoreBackup } from '../lib/backup'
 import { tint } from '../lib/color'
 import { db, DEFAULT_SETTINGS, DEFAULT_STATUSES } from '../lib/db'
@@ -238,16 +237,6 @@ export function SettingsPage() {
             שחזר חדרים מוסתרים ({settings.hiddenRooms.length})
           </button>
         )}
-      </section>
-
-      <section className="card space-y-2 p-4 sm:p-5">
-        <h2 className="font-semibold text-navy">כניסת מנהל</h2>
-        <p className="text-sm text-muted">
-          הכניסה למסך הניהול היא בחירה בלבד ואינה מופיעה בפתיחת האתר.
-        </p>
-        <Link to="/admin" className="btn-ghost w-full text-sm sm:w-auto">
-          כניסה למסך ניהול
-        </Link>
       </section>
     </div>
   )

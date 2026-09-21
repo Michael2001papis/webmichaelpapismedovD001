@@ -11,8 +11,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "lint": "oxlint",
-    "admin:hash": "node scripts/hash-admin-password.mjs"
+    "lint": "oxlint"
   },
   "dependencies": {
     "dexie": "^4.4.6",
