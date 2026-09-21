@@ -1,0 +1,10 @@
+{
+  "name": "Holikar",
+  "short_name": "Holikar",
+  "dir": "rtl",
+  "lang": "he",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0b1f33",
+  "theme_color": "#0b1f33"
+}
