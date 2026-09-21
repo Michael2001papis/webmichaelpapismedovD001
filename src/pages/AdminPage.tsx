@@ -1,13 +1,14 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { formatDateTime } from '../lib/id'
+import { localLogin, localLogout, localSession, readLocalLock, writeLocalLock, type LocalLock } from '../lib/localAdmin'
 
-type AdminState = {
-  user: string
-  locked: boolean
-  lastClosedAt: number | null
-  lastOpenedAt: number | null
-  store: string
+type AdminState = LocalLock & { user: string }
+
+function currentSession(): AdminState | null {
+  const session = localSession()
+  if (!session) return null
+  return { user: session.user, ...readLocalLock() }
 }
 
 export function AdminPage() {
@@ -15,89 +16,35 @@ export function AdminPage() {
   const [password, setPassword] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
-  const [session, setSession] = useState<AdminState | null>(null)
-  const [checking, setChecking] = useState(true)
+  const [session, setSession] = useState<AdminState | null>(() => currentSession())
 
-  useEffect(() => {
-    let cancelled = false
-    void fetch('/api/admin/me', { credentials: 'include', cache: 'no-store' })
-      .then(async (res) => {
-        if (!res.ok) return null
-        return (await res.json()) as AdminState
-      })
-      .then((data) => {
-        if (!cancelled && data?.user) setSession(data)
-      })
-      .finally(() => {
-        if (!cancelled) setChecking(false)
-      })
-    return () => {
-      cancelled = true
-    }
-  }, [])
-
-  async function login(event: FormEvent) {
+  function login(event: FormEvent) {
     event.preventDefault()
     setBusy(true)
     setError('')
-    try {
-      const res = await fetch('/api/admin/login', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
-      })
-      const data = (await res.json()) as AdminState & { error?: string; retryAfter?: number }
-      if (!res.ok) {
-        if (res.status === 429) setError('יותר מדי ניסיונות. נסו שוב בעוד כמה דקות.')
-        else if (res.status === 503) setError('חשבון המנהל עדיין לא הוגדר בשרת.')
-        else setError('שם משתמש או סיסמה שגויים.')
-        return
-      }
-      setPassword('')
-      setUsername('')
-      setSession(data)
-    } catch {
-      setError('לא ניתן להתחבר כרגע.')
-    } finally {
+    const ok = localLogin(username, password)
+    if (!ok) {
+      setError('שם משתמש או סיסמה שגויים.')
       setBusy(false)
+      return
     }
+    setPassword('')
+    setUsername('')
+    setSession(currentSession())
+    setBusy(false)
   }
 
-  async function logout() {
-    await fetch('/api/admin/logout', { method: 'POST', credentials: 'include' })
+  function logout() {
+    localLogout()
     setSession(null)
   }
 
-  async function setLocked(locked: boolean) {
+  function setLocked(locked: boolean) {
     setBusy(true)
     setError('')
-    try {
-      const res = await fetch('/api/admin/lock', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ locked }),
-      })
-      const data = (await res.json()) as AdminState & { error?: string }
-      if (!res.ok) {
-        setError('לא ניתן לעדכן את מצב המערכת.')
-        return
-      }
-      setSession((current) =>
-        current
-          ? {
-              ...current,
-              locked: data.locked,
-              lastClosedAt: data.lastClosedAt,
-              lastOpenedAt: data.lastOpenedAt,
-              store: data.store,
-            }
-          : data,
-      )
-    } finally {
-      setBusy(false)
-    }
+    writeLocalLock(locked)
+    setSession(currentSession())
+    setBusy(false)
   }
 
   return (
@@ -106,9 +53,7 @@ export function AdminPage() {
         <div className="text-[11px] font-semibold tracking-[0.22em] text-gold uppercase">Holikar Admin</div>
       </header>
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-8 sm:px-5 sm:py-12">
-        {checking ? (
-          <div className="text-sm text-muted">טוען...</div>
-        ) : session ? (
+        {session ? (
           <section className="card min-w-0 overflow-hidden p-4 sm:p-6">
             <h1 className="text-xl font-bold text-navy">מצב המערכת</h1>
             <p className="mt-1 text-xs text-muted">מחובר כ-{session.user}</p>
@@ -135,11 +80,7 @@ export function AdminPage() {
                 {session.lastOpenedAt ? formatDateTime(session.lastOpenedAt) : '—'}
               </div>
             </div>
-            {session.store === 'memory' && (
-              <p className="mt-4 text-xs text-watch">
-                מצב הנעילה נשמר כרגע בזיכרון השרת בלבד. כדי שיעבוד בין מכשירים ב-Vercel יש להגדיר Redis.
-              </p>
-            )}
+            <p className="mt-4 text-xs text-muted">המצב נשמר בדפדפן הזה.</p>
             {error ? <p className="mt-4 text-sm text-bad">{error}</p> : null}
             <div className="mt-6 flex items-center justify-between text-sm">
               <Link to="/" className="font-semibold text-navy">

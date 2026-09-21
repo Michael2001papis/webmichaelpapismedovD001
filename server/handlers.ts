@@ -60,7 +60,7 @@ async function login(req: ApiRequest): Promise<ApiResponse> {
   const body = req.body as { username?: unknown; password?: unknown }
   const username = typeof body.username === 'string' ? body.username.trim() : ''
   const password = typeof body.password === 'string' ? body.password : ''
-  const userOk = safeEqual(username, user)
+  const userOk = username.length > 0 && safeEqual(username.toLowerCase(), user.toLowerCase())
   const passOk = password.length > 0 && verifyPassword(password, hash)
   if (!userOk || !passOk) {
     return json(401, { error: 'invalid_credentials' })

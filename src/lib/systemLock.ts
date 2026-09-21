@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { LOCK_EVENT, readLocalLock } from './localAdmin'
 
 export type SystemStatus = {
   locked: boolean
@@ -6,46 +7,18 @@ export type SystemStatus = {
   error: boolean
 }
 
-const POLL_MS = 12000
-
 export function useSystemStatus(): SystemStatus {
-  const [state, setState] = useState<SystemStatus>({ locked: false, ready: false, error: false })
+  const [locked, setLocked] = useState(() => readLocalLock().locked)
 
   useEffect(() => {
-    let cancelled = false
-
-    async function load() {
-      try {
-        const res = await fetch('/api/system-status', { credentials: 'include', cache: 'no-store' })
-        const text = await res.text()
-        if (cancelled) return
-        try {
-          const data = JSON.parse(text) as { locked?: boolean }
-          if (!res.ok) {
-            setState((prev) => ({ locked: prev.ready ? prev.locked : false, ready: true, error: true }))
-            return
-          }
-          setState({ locked: Boolean(data.locked), ready: true, error: false })
-        } catch {
-          setState((prev) => ({ locked: prev.ready ? prev.locked : false, ready: true, error: true }))
-        }
-      } catch {
-        if (!cancelled) {
-          setState((prev) => ({ locked: prev.ready ? prev.locked : false, ready: true, error: true }))
-        }
-      }
-    }
-
-    void load()
-    const timer = window.setInterval(() => void load(), POLL_MS)
-    const onFocus = () => void load()
-    window.addEventListener('focus', onFocus)
+    const sync = () => setLocked(readLocalLock().locked)
+    window.addEventListener(LOCK_EVENT, sync)
+    window.addEventListener('storage', sync)
     return () => {
-      cancelled = true
-      window.clearInterval(timer)
-      window.removeEventListener('focus', onFocus)
+      window.removeEventListener(LOCK_EVENT, sync)
+      window.removeEventListener('storage', sync)
     }
   }, [])
 
-  return state
+  return { locked, ready: true, error: false }
 }

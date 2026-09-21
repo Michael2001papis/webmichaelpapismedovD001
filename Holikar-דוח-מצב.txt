@@ -1,0 +1,374 @@
+================================================================================
+Holikar — דוח מצב אתר מלא
+================================================================================
+תאריך הדוח:        21 בספטמבר 2026
+שם המערכת:         Holikar
+ייעוד:             ניהול בדיקות, ליקויים ומשימות בחדרי מלון (שימוש פנימי באחזקה)
+לקוח / אתר:        מלון יאכט הרצליה
+בעלים:             Michael Papismedov
+תיקיית הפרויקט:    d:\Webs All\webmichaelpapismedovD001
+שם החבילה:         holikar@1.0.0
+סטטוס כללי:        תקין — קוד בנוי, רספונסיבי, עם מנגנון Admin Lock
+העלאה:             ידנית ל-GitHub דרך VS Code (ללא Push אוטומטי בדוח זה)
+
+ענן:
+  GitHub:  https://github.com/Michael2001papis/webmichaelpapismedovD001
+  ענף:     main
+  Commit:  V01.03 (2908f80) — מסונכרן עם origin/main
+  Vercel:  https://vercel.com/mikis-projects-59fa1a6b/webmichaelpapismedov-d001
+  אתר חי:  https://webmichaelpapismedov-d001.vercel.app/
+
+
+================================================================================
+1. סיכום מנהלים
+================================================================================
+Holikar היא אפליקציית Web (SPA) בעברית RTL לביצוע בדיקות חדרים במלון.
+נתוני הבדיקות נשמרים בדפדפן (IndexedDB / Dexie). אין שרת מסד נתונים לבדיקות החדרים.
+
+נוסף מנגנון Admin נפרד לסגירה/פתיחה גלובלית של המערכת (Maintenance Lock):
+זה נעילה בתוך האפליקציה, לא כיבוי של Vercel. האתר נשאר באוויר, ומסך Admin
+נגיש גם כשהמערכת "סגורה" למשתמשים רגילים.
+
+הממשק מותאם מטלפון צר (כ-320px) עד מסך מחשב רחב. בטלפון: תפריט תחתון.
+במחשב (מ-1024px): Sidebar.
+
+
+================================================================================
+2. סטאק טכנולוגי
+================================================================================
+Frontend:     React 19 + TypeScript 6 + Vite 8
+עיצוב:        Tailwind CSS 4, גופן Heebo, כיוון RTL
+ניווט:        React Router 7 (BrowserRouter)
+נתונים מקומיים: Dexie (IndexedDB), שם המסד: holikar-db
+ייצוא:        Excel (xlsx), PDF (jspdf + html2canvas)
+אייקונים:     lucide-react
+שרת API:      Vite middleware בפיתוח; Vercel Serverless בתיקיית api/
+אבטחת Admin:  scrypt (סיסמה כ-Hash), Cookie httpOnly, HMAC session, rate limit
+Node:         20 (מוגדר ב-.nvmrc)
+Build:        npm run build  →  tsc -b && vite build  →  dist/
+
+
+================================================================================
+3. מסכים ונתיבים
+================================================================================
+נתיב                 מסך                         הערות
+---------------------------------------------------------------------------
+/                    בית                         דשבורד + יצירת בדיקה
+/new                 בדיקה חדשה                  Composer
+/inspection/:id      עבודת בדיקה                 לפי חדר / טבלה
+/archive             ארכיון                      כל הבדיקות במכשיר
+/templates           תבניות                      תבניות מוכנות + יצירה
+/reports             דוחות                       סיכום + ייצוא Excel
+/settings            הגדרות                      פרטים, סטטוסים, חדרים, גיבוי, כניסת מנהל
+/admin               Admin                       מחוץ ל-SystemGate — זמין גם כשהמערכת סגורה
+*                    הפניה לבית
+
+כניסת Admin אינה מסך הפתיחה. היא בחירה מתוך הגדרות, או ישירות ל-/admin.
+בזמן נעילה מוצג מסך: "Holikar אינה זמינה כרגע".
+
+
+================================================================================
+4. יכולות עיקריות
+================================================================================
+• יצירת בדיקה בשפה חופשית (זיהוי חדרים ובדיקות) או בנייה ידנית
+• בחירת חדרים: כל המלון, לפי קומה, טווח, או חדרים בודדים
+• עבודה לפי חדר: מספר חדר גדול, סטטוסים גדולים, הערות, מעבר בין חדרים
+• תצוגת טבלה במחשב; במובייל — Card View לפי חדר
+• סטטוסים: תקין, לא תקין, מידע חסר, לא רלוונטי, דורש מעקב, טופל
+• תבניות ברירת מחדל: מזגנים, יצחקי, חדר לפני אכלוס, דלתות, אינסטלציה, צבע
+• ייצוא Excel ו-PDF
+• גיבוי/שחזור JSON מקומי
+• רספונסיבי: 320 / 360 / 390 / 430 / 768 / 1024 / 1440 וגם לרוחב
+• Admin Lock גלובלי (דורש Redis ב-Vercel כדי לעבוד בין מכשירים)
+
+
+================================================================================
+5. מנגנון Admin (Maintenance Lock)
+================================================================================
+התחברות:
+  האימות בצד שרת בלבד. שם המשתמש והסיסמה לא שמורים ב-Frontend ולא ב-GitHub.
+  הסיסמה נשמרת כ-Hash (scrypt) בקובץ .env המקומי (gitignored).
+  שדות Username / Password במסך ריקים כברירת מחדל. אין value לסיסמה ב-HTML.
+
+  משתני סביבה:
+    HOLIKAR_ADMIN_USER
+    HOLIKAR_ADMIN_PASSWORD_HASH
+    HOLIKAR_SESSION_SECRET
+    UPSTASH_REDIS_REST_URL      (לייצור — נעילה גלובלית)
+    UPSTASH_REDIS_REST_TOKEN
+
+  Session: Cookie בשם holikar_admin_session, httpOnly, SameSite=Lax, כ-8 שעות.
+  Rate limit: 8 ניסיונות / 15 דקות לפי IP.
+  Logout קיים במסך Admin.
+
+API:
+  GET  /api/system-status     ציבורי — מחזיר רק { locked }
+  POST /api/admin/login
+  POST /api/admin/logout
+  GET  /api/admin/me
+  POST /api/admin/lock        דורש session
+
+אחסון מצב נעילה:
+  מקומית: קובץ data/system-lock.json (לא עולה ל-GitHub)
+  Vercel: Redis (Upstash / Vercel KV) — חובה לנעילה אחידה בין טלפונים
+  בלי Redis בייצור: זיכרון שרת בודד בלבד (לא גלובלי)
+
+חשוב ל-Vercel: אחרי שינוי Hash/.env מקומי יש להעתיק את המשתנים ל-Vercel
+ואז Redeploy. בלי זה הכניסה תעבוד רק במחשב המקומי.
+
+
+================================================================================
+6. מסד נתונים ונתוני מלון
+================================================================================
+IndexedDB (Dexie) — holikar-db:
+  inspections   id, createdAt, updatedAt, workflowStatus
+  templates     id, name, createdAt
+  statuses      id, order
+  settings      id
+
+הגדרות ברירת מחדל:
+  מבצע:     Michael Papismedov
+  מלון:     מלון יאכט הרצליה
+  מחלקה:    Holikar / אחזקה
+
+חדרי מלון (טווחים בקוד):
+  קומה 1: 101–128
+  קומה 2: 201–266
+  קומה 3: 301–396
+  קומה 4: 401–435
+  קומה 5: 501–545
+  קומה 6: 601–644
+  ניתן להוסיף/להסתיר חדרים בהגדרות.
+
+
+================================================================================
+7. Git / GitHub / מה לא עולה
+================================================================================
+ענף נוכחי: main
+Commit אחרון מקומי: V01.03
+Working tree: נקי בזמן כתיבת הדוח (אין שינויים לא-שמורים בקוד)
+
+.gitignore מונע העלאה של:
+  node_modules, dist, .env, .env.* (מלבד .env.example),
+  data/, .vercel, .cursor, לוגים, קבצי עורך
+
+כן עולים ל-GitHub: src, server, api, public, scripts, קבצי תצורה, README, .env.example
+
+אין סיסמה גלויה בקוד המעקב.
+
+
+================================================================================
+8. Vercel / Build
+================================================================================
+Framework:        Vite
+Build Command:    npm run build
+Output Directory: dist
+Install:          npm install
+SPA rewrite:      כל הנתיבים למעט /api/* → index.html
+API:              api/[[...path]].ts  (catch-all ל-/api/...)
+Node:             20
+
+פקודות מקומיות:
+  npm install
+  npm run dev          http://localhost:5173
+  npm run build        חובה לעבור בלי שגיאות
+  npm run preview
+  npm run admin:hash -- "סיסמה"
+
+
+================================================================================
+9. עיצוב ו-Responsive
+================================================================================
+פלטה: כחול כהה #24364A, קרם #F6F0E6, זהב #C8A96B, נייר #FCFAF6
+טיפוגרפיה: Heebo
+כפתורים: מינימום כ-44px ללחיצה באצבע
+אין גלילה אופקית לכל העמוד
+טבלאות מורכבות: Card View במובייל, גלילה פנימית לטבלה במסך רחב
+תפריט: bottom nav עד lg, sidebar ממסך מחשב
+
+
+================================================================================
+10. עץ תיקיות מפורט
+================================================================================
+הערה: node_modules, dist ו-.git קיימים במחשב אך לא מוצגים כאן במלואם
+(אלפי קבצים / לא עולים ל-GitHub). תיקיית data/ ו-.env מקומיים ולא ב-Git.
+
+webmichaelpapismedovD001/
++-- api/
+|   \-- [[...path]].ts                 נקודת כניסה ל-Vercel Serverless API
++-- data/                              מקומי בלבד (gitignored)
+|   \-- system-lock.json               מצב פתוח/סגור בפיתוח
++-- public/
+|   +-- favicon.svg
+|   \-- manifest.json                  PWA בסיסי, RTL, Holikar
++-- scripts/
+|   \-- hash-admin-password.mjs        יצירת Hash לסיסמת Admin
++-- server/
+|   +-- crypto.ts                      scrypt + חתימת session
+|   +-- env.ts                         קריאת משתני סביבה / .env מקומי
+|   +-- handlers.ts                    login / logout / me / lock / status
+|   +-- http.ts                        Node request/response + cookies
+|   +-- ratelimit.ts                   הגבלת ניסיונות התחברות
+|   +-- store.ts                       Redis / קובץ / זיכרון
+|   +-- types.ts                       טיפוסי API ומצב נעילה
+|   \-- vite-plugin.ts                 API ב-npm run dev / preview
++-- src/
+|   +-- components/
+|   |   +-- CellNote.tsx               הערה לתא בדיקה
+|   |   +-- CheckEditor.tsx            עריכת עמודות בדיקה
+|   |   +-- Composer.tsx               יצירת בדיקה מטקסט חופשי
+|   |   +-- Dashboard.tsx              כרטיסי סטטיסטיקה בבית
+|   |   +-- InspectionTable.tsx        טבלה / כרטיסים
+|   |   +-- Layout.tsx                 כותרת, sidebar, תפריט תחתון
+|   |   +-- MaintenanceScreen.tsx      מסך "המערכת סגורה"
+|   |   +-- MobileRoomWork.tsx         עבודה לפי חדר
+|   |   +-- ReportDocument.tsx         מסמך PDF (מוסתר מהמסך)
+|   |   +-- RoomPicker.tsx             בחירת חדרים
+|   |   +-- StatusBadge.tsx            תג + בוחר סטטוס
+|   |   \-- SystemGate.tsx             שער נעילה למשתמשים רגילים
+|   +-- lib/
+|   |   +-- backup.ts                  גיבוי/שחזור JSON
+|   |   +-- color.ts                   גוון רקע לסטטוס
+|   |   +-- db.ts                      Dexie, seed, פעולות בדיקה
+|   |   +-- exportExcel.ts             ייצוא Excel
+|   |   +-- exportPdf.ts               ייצוא PDF
+|   |   +-- id.ts                      מזהים, תאריכים, cn
+|   |   +-- parser.ts                  פיענוח טקסט חופשי
+|   |   +-- rooms.ts                   טווחי חדרי המלון
+|   |   +-- stats.ts                   סטטיסטיקות ו-workflow
+|   |   \-- systemLock.ts              סטטוס נעילה מה-API (poll)
+|   +-- pages/
+|   |   +-- AdminPage.tsx              כניסת מנהל + הפעלה/כיבוי
+|   |   +-- ArchivePage.tsx
+|   |   +-- HomePage.tsx
+|   |   +-- InspectionPage.tsx
+|   |   +-- NewInspectionPage.tsx
+|   |   +-- ReportsPage.tsx
+|   |   +-- SettingsPage.tsx
+|   |   \-- TemplatesPage.tsx
+|   +-- App.tsx                        נתיבים
+|   +-- index.css                      ערכת עיצוב + כפתורים + overflow
+|   +-- main.tsx                       כניסת React + seed DB
+|   \-- types.ts                       טיפוסי דומיין
++-- .env                               מקומי בלבד — סודות Admin (לא ב-Git)
++-- .env.example                       תבנית ריקה למשתני סביבה
++-- .gitattributes
++-- .gitignore
++-- .nvmrc                             20
++-- .oxlintrc.json
++-- index.html                         lang=he dir=rtl
++-- package.json
++-- package-lock.json
++-- README.md
++-- tsconfig.json
++-- tsconfig.app.json
++-- tsconfig.node.json
++-- vercel.json
+\-- vite.config.ts
+
+תיקיות קיימות במחשב ולא בעץ המלא:
+  node_modules/     תלויות npm (לא ב-Git)
+  dist/             תוצר build (לא ב-Git)
+  .git/             היסטוריית Git
+  .vercel/          אם בוצע login מקומי (לא ב-Git)
+
+
+================================================================================
+11. רשימת קבצים במעקב Git (git ls-files)
+================================================================================
+.env.example
+.gitattributes
+.gitignore
+.nvmrc
+.oxlintrc.json
+README.md
+api/[[...path]].ts
+index.html
+package-lock.json
+package.json
+public/favicon.svg
+public/manifest.json
+scripts/hash-admin-password.mjs
+server/crypto.ts
+server/env.ts
+server/handlers.ts
+server/http.ts
+server/ratelimit.ts
+server/store.ts
+server/types.ts
+server/vite-plugin.ts
+src/App.tsx
+src/components/CellNote.tsx
+src/components/CheckEditor.tsx
+src/components/Composer.tsx
+src/components/Dashboard.tsx
+src/components/InspectionTable.tsx
+src/components/Layout.tsx
+src/components/MaintenanceScreen.tsx
+src/components/MobileRoomWork.tsx
+src/components/ReportDocument.tsx
+src/components/RoomPicker.tsx
+src/components/StatusBadge.tsx
+src/components/SystemGate.tsx
+src/index.css
+src/lib/backup.ts
+src/lib/color.ts
+src/lib/db.ts
+src/lib/exportExcel.ts
+src/lib/exportPdf.ts
+src/lib/id.ts
+src/lib/parser.ts
+src/lib/rooms.ts
+src/lib/stats.ts
+src/lib/systemLock.ts
+src/main.tsx
+src/pages/AdminPage.tsx
+src/pages/ArchivePage.tsx
+src/pages/HomePage.tsx
+src/pages/InspectionPage.tsx
+src/pages/NewInspectionPage.tsx
+src/pages/ReportsPage.tsx
+src/pages/SettingsPage.tsx
+src/pages/TemplatesPage.tsx
+src/types.ts
+tsconfig.app.json
+tsconfig.json
+tsconfig.node.json
+vercel.json
+vite.config.ts
+
+
+================================================================================
+12. בדיקות שבוצעו לאחרונה
+================================================================================
+• npm run build — עבר בהצלחה אחרי עדכון Admin ו-Responsive
+• כניסת Admin עם הפרטים המוגדרים ב-.env המקומי — הצליחה
+• פרטי התחברות ישנים נדחו
+• שדות ההתחברות ריקים, הסיסמה לא ב-HTML
+• סגירה ופתיחה של Holikar דרך API — עבדו
+• בדיקת רוחבים 320–1440: אין גלילת עמוד אופקית
+
+
+================================================================================
+13. נקודות לתשומת לב (לא באגים בקוד)
+================================================================================
+1. כדי שנעילה תעבוד משני מכשירים באתר החי — חובה Redis ב-Vercel.
+2. כדי שכניסת Admin תעבוד באתר החי — להעתיק משתני .env ל-Vercel ואז Redeploy.
+   לא להעלות את קובץ .env ל-GitHub.
+3. ארכיון הבדיקות הוא מקומי לכל דפדפן/מכשיר (IndexedDB). גיבוי JSON מומלץ.
+4. ההעלאה ל-GitHub מתבצעת ידנית דרך VS Code (Commit + Sync).
+
+
+================================================================================
+14. היסטוריית Commits אחרונה
+================================================================================
+2908f80  V01.03
+a263f85  V01.02
+94ca1cc  Add full project status report for Holikar publish.
+f86d510  01.01.01
+
+
+================================================================================
+סוף דוח
+================================================================================
+© 2026 Michael Papismedov | Holikar | Internal Maintenance Management System

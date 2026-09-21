@@ -1,4 +1,4 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { HashRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { Layout } from './components/Layout'
 import { SystemGate } from './components/SystemGate'
 import { AdminPage } from './pages/AdminPage'
@@ -12,7 +12,7 @@ import { TemplatesPage } from './pages/TemplatesPage'
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Routes>
         <Route path="/admin" element={<AdminPage />} />
         <Route element={<SystemGate />}>
@@ -28,6 +28,6 @@ export default function App() {
           </Route>
         </Route>
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   )
 }
