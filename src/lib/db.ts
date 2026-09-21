@@ -5,20 +5,20 @@ import { uniqueRooms } from './rooms'
 import { deriveWorkflow, emptyStatusId } from './stats'
 
 export const DEFAULT_STATUSES: StatusDefinition[] = [
-  { id: 'ok', name: 'תקין', color: '#0f7a4a', bg: '#d9f5e7', shortcut: '✓', order: 0 },
-  { id: 'bad', name: 'לא תקין', color: '#b42318', bg: '#fde4e1', shortcut: '✕', order: 1 },
+  { id: 'ok', name: 'תקין', color: '#4F7A5A', bg: '#E8F0EA', shortcut: '✓', order: 0 },
+  { id: 'bad', name: 'לא תקין', color: '#B44949', bg: '#F6E8E8', shortcut: '✕', order: 1 },
   {
     id: 'missing',
     name: 'מידע חסר',
-    color: '#8a6a12',
-    bg: '#f8ecc7',
+    color: '#7C8894',
+    bg: '#EEF1F3',
     shortcut: '?',
     order: 2,
     isDefaultEmpty: true,
   },
-  { id: 'na', name: 'לא רלוונטי', color: '#4b5563', bg: '#e8edf2', order: 3 },
-  { id: 'watch', name: 'דורש מעקב', color: '#c2410c', bg: '#ffedd5', order: 4 },
-  { id: 'fixed', name: 'טופל', color: '#1d4ed8', bg: '#dbeafe', order: 5 },
+  { id: 'na', name: 'לא רלוונטי', color: '#5E6368', bg: '#F0F1F2', order: 3 },
+  { id: 'watch', name: 'דורש מעקב', color: '#C97A2B', bg: '#F8EEDF', order: 4 },
+  { id: 'fixed', name: 'טופל', color: '#24364A', bg: '#E8EDF1', order: 5 },
 ]
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -64,6 +64,12 @@ export const db = new HolikarDB()
 export async function seedDatabase() {
   const statusCount = await db.statuses.count()
   if (statusCount === 0) await db.statuses.bulkAdd(DEFAULT_STATUSES)
+  else {
+    for (const def of DEFAULT_STATUSES) {
+      const existing = await db.statuses.get(def.id)
+      if (existing) await db.statuses.update(def.id, { color: def.color, bg: def.bg })
+    }
+  }
 
   const settings = await db.settings.get('main')
   if (!settings) await db.settings.add(DEFAULT_SETTINGS)

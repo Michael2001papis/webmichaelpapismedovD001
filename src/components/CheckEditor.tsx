@@ -18,7 +18,7 @@ export function CheckEditor({
 
   return (
     <div className="space-y-3">
-      <div className="flex gap-2">
+      <div className="flex min-w-0 gap-2">
         <input
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
@@ -29,19 +29,20 @@ export function CheckEditor({
             }
           }}
           placeholder="הוסף בדיקה, למשל חלודה בידית"
-          className="min-w-0 flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+          className="field min-w-0 flex-1"
         />
         <button
           type="button"
           onClick={add}
-          className="rounded-xl bg-sea px-4 py-2 text-sm font-bold text-white"
+          className="btn-primary shrink-0 px-3 text-sm sm:px-4"
         >
-          הוסף עמודה
+          <span className="sm:hidden">הוסף</span>
+          <span className="hidden sm:inline">הוסף עמודה</span>
         </button>
       </div>
       <div className="space-y-2">
         {value.map((check, index) => (
-          <div key={`${check}-${index}`} className="flex items-center gap-2 rounded-xl bg-cream px-3 py-2">
+          <div key={`${check}-${index}`} className="flex min-w-0 flex-col gap-2 rounded-xl bg-cream p-2 sm:flex-row sm:items-center sm:px-3 sm:py-2">
             <input
               value={check}
               onChange={(e) => {
@@ -49,31 +50,33 @@ export function CheckEditor({
                 next[index] = e.target.value
                 onChange(next)
               }}
-              className="min-w-0 flex-1 bg-transparent text-sm font-semibold outline-none"
+              className="field min-w-0 flex-1 bg-white text-sm font-semibold sm:border-0 sm:bg-transparent sm:px-0 sm:py-1"
             />
-            <button
-              type="button"
-              className="text-xs font-bold text-muted"
-              onClick={() => onChange(value.filter((_, i) => i !== index))}
-            >
-              מחק
-            </button>
-            <button
-              type="button"
-              disabled={index === 0}
-              className="text-xs font-bold text-navy disabled:opacity-30"
-              onClick={() => move(value, index, -1, onChange)}
-            >
-              למעלה
-            </button>
-            <button
-              type="button"
-              disabled={index === value.length - 1}
-              className="text-xs font-bold text-navy disabled:opacity-30"
-              onClick={() => move(value, index, 1, onChange)}
-            >
-              למטה
-            </button>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                className="btn-danger min-h-11 flex-1 px-3 text-xs sm:flex-none"
+                onClick={() => onChange(value.filter((_, i) => i !== index))}
+              >
+                מחק
+              </button>
+              <button
+                type="button"
+                disabled={index === 0}
+                className="btn-ghost min-h-11 flex-1 px-3 text-xs sm:flex-none"
+                onClick={() => move(value, index, -1, onChange)}
+              >
+                למעלה
+              </button>
+              <button
+                type="button"
+                disabled={index === value.length - 1}
+                className="btn-ghost min-h-11 flex-1 px-3 text-xs sm:flex-none"
+                onClick={() => move(value, index, 1, onChange)}
+              >
+                למטה
+              </button>
+            </div>
           </div>
         ))}
       </div>

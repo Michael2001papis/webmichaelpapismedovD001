@@ -1,3 +1,4 @@
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import type { Inspection, StatusDefinition } from '../types'
 import { markRoomStatus, setCell } from '../lib/db'
@@ -51,87 +52,83 @@ export function MobileRoomWork({
   }
 
   if (!inspection.rooms.length) {
-    return <div className="rounded-3xl bg-paper p-4 text-sm text-muted">אין חדרים להצגה.</div>
+    return <div className="card p-4 text-sm text-muted">אין חדרים להצגה.</div>
   }
 
   return (
-    <div className="space-y-3">
+    <div className="min-w-0 space-y-3">
       <input
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="חפש מספר חדר"
-        className="w-full rounded-2xl border border-slate-200 bg-paper px-4 py-3 text-base"
+        className="field text-base"
         inputMode="numeric"
       />
 
-      <div className="flex gap-2 overflow-auto pb-1">
-        {grouped.map((group) => (
-          <div key={String(group.floor)} className="min-w-max">
-            <div className="mb-1 text-[11px] font-bold text-muted">
-              {group.floor ? `קומה ${group.floor}` : 'אחר'}
+      <div className="table-scroll pb-1">
+        <div className="flex w-max min-w-full gap-2">
+          {grouped.map((group) => (
+            <div key={String(group.floor)} className="shrink-0">
+              <div className="mb-1 text-[11px] font-medium text-muted">
+                {group.floor ? `קומה ${group.floor}` : 'אחר'}
+              </div>
+              <div className="flex gap-1">
+                {group.rooms.map((item) => {
+                  const done = columns.every(
+                    (column) => cellOf(inspection, item, column.id, missing).statusId !== missing,
+                  )
+                  const bad = columns.some((column) => {
+                    const statusId = cellOf(inspection, item, column.id, missing).statusId
+                    return statusId === 'bad' || statusId === 'watch'
+                  })
+                  return (
+                    <button
+                      key={item}
+                      type="button"
+                      onClick={() => setRoom(item)}
+                      className={
+                        item === room
+                          ? 'min-h-11 min-w-11 rounded-lg bg-navy px-3 py-2 text-sm font-bold text-paper'
+                          : bad
+                            ? 'min-h-11 min-w-11 rounded-lg border border-bad/40 bg-paper px-3 py-2 text-sm font-semibold text-bad'
+                            : done
+                              ? 'min-h-11 min-w-11 rounded-lg border border-ok/30 bg-paper px-3 py-2 text-sm font-semibold text-ok'
+                              : 'min-h-11 min-w-11 rounded-lg border border-line bg-paper px-3 py-2 text-sm font-semibold text-navy'
+                      }
+                    >
+                      {item}
+                    </button>
+                  )
+                })}
+              </div>
             </div>
-            <div className="flex gap-1">
-              {group.rooms.map((item) => {
-                const done = columns.every(
-                  (column) => cellOf(inspection, item, column.id, missing).statusId !== missing,
-                )
-                const bad = columns.some((column) => {
-                  const statusId = cellOf(inspection, item, column.id, missing).statusId
-                  return statusId === 'bad' || statusId === 'watch'
-                })
-                return (
-                  <button
-                    key={item}
-                    type="button"
-                    onClick={() => setRoom(item)}
-                    className={
-                      item === room
-                        ? 'rounded-xl bg-navy px-3 py-2 text-sm font-extrabold text-cream'
-                        : bad
-                          ? 'rounded-xl bg-red-100 px-3 py-2 text-sm font-bold text-red-800'
-                          : done
-                            ? 'rounded-xl bg-emerald-100 px-3 py-2 text-sm font-bold text-emerald-800'
-                            : 'rounded-xl bg-paper px-3 py-2 text-sm font-bold'
-                    }
-                  >
-                    {item}
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
-      <div className="rounded-3xl bg-paper p-4 shadow-sm">
-        <div className="mb-4 flex items-center justify-between">
-          <button type="button" onClick={() => go(-1)} className="rounded-full bg-cream px-3 py-2 text-sm font-bold">
-            הקודם
+      <div className="card overflow-hidden p-3 sm:p-4">
+        <div className="mb-4 grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2">
+          <button type="button" onClick={() => go(-1)} className="btn-ghost min-h-11 min-w-11 px-2 sm:px-3" aria-label="חדר קודם">
+            <ChevronRight size={18} strokeWidth={1.7} />
+            <span className="hidden sm:inline">הקודם</span>
           </button>
-          <div className="text-center">
-            <div className="text-xs font-bold text-muted">חדר</div>
-            <div className="text-3xl font-black text-navy">{room}</div>
+          <div className="min-w-0 text-center">
+            <div className="text-[11px] font-medium tracking-wide text-muted uppercase">חדר</div>
+            <div className="truncate text-3xl font-bold leading-none text-navy sm:text-4xl">{room}</div>
           </div>
-          <button type="button" onClick={() => go(1)} className="rounded-full bg-cream px-3 py-2 text-sm font-bold">
-            הבא
+          <button type="button" onClick={() => go(1)} className="btn-ghost min-h-11 min-w-11 px-2 sm:px-3" aria-label="חדר הבא">
+            <span className="hidden sm:inline">הבא</span>
+            <ChevronLeft size={18} strokeWidth={1.7} />
           </button>
         </div>
 
-        <div className="mb-4 grid grid-cols-2 gap-2">
+        <div className="mb-4 grid grid-cols-1 gap-2 min-[400px]:grid-cols-2">
           {okId && (
-            <button
-              type="button"
-              onClick={() => void markRoomOk()}
-              className="rounded-2xl bg-emerald-600 py-3 text-sm font-extrabold text-white"
-            >
+            <button type="button" onClick={() => void markRoomOk()} className="btn-primary min-h-12 py-3 text-sm">
               הכל תקין והמשך
             </button>
           )}
-          <button
-            type="button"
-            onClick={nextIncomplete}
-            className="rounded-2xl bg-cream py-3 text-sm font-extrabold text-navy"
-          >
+          <button type="button" onClick={nextIncomplete} className="btn-secondary min-h-12 py-3 text-sm">
             דלג לחדר חסר
           </button>
         </div>
@@ -141,11 +138,15 @@ export function MobileRoomWork({
             const cell = cellOf(inspection, room, column.id, missing)
             const status = statuses.find((item) => item.id === cell.statusId)
             const showNote = cell.statusId === 'bad' || cell.statusId === 'watch' || Boolean(cell.note)
+            const issue = cell.statusId === 'bad' || cell.statusId === 'watch'
             return (
-              <div key={column.id} className="rounded-2xl border border-slate-100 p-3">
-                <div className="mb-2 flex items-center justify-between gap-2">
-                  <div className="font-extrabold">{column.name}</div>
-                  {status ? <StatusBadge status={status} /> : null}
+              <div
+                key={column.id}
+                className={`rounded-[12px] border bg-paper p-3 ${issue ? 'border-bad/35' : 'border-line'}`}
+              >
+                <div className="mb-3 flex min-w-0 items-center justify-between gap-2">
+                  <div className="min-w-0 font-semibold break-words text-navy">{column.name}</div>
+                  {status ? <StatusBadge status={status} className="shrink-0" /> : null}
                 </div>
                 <StatusPicker
                   statuses={statuses}

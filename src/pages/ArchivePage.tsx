@@ -1,3 +1,4 @@
+import { FileSpreadsheet } from 'lucide-react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -20,29 +21,34 @@ export function ArchivePage() {
   )
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-3xl font-black text-navy">ארכיון בדיקות</h1>
+    <div className="space-y-5">
+      <div>
+        <h1 className="text-xl font-bold text-navy sm:text-2xl md:text-3xl">ארכיון בדיקות</h1>
+        <p className="mt-1 text-sm text-muted">כל הבדיקות שנשמרו בדפדפן זה.</p>
+      </div>
       <input
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="חיפוש לפי שם, חדר או מבצע"
-        className="w-full rounded-2xl border border-slate-200 bg-paper px-4 py-3"
+        className="field"
       />
       {filtered.length === 0 ? (
-        <div className="rounded-3xl bg-paper p-6 text-muted">אין בדיקות בארכיון עדיין.</div>
+        <div className="card p-6 text-muted">אין בדיקות בארכיון עדיין.</div>
       ) : (
         <div className="space-y-3">
           {filtered.map((inspection) => {
             const stats = statuses.length ? computeInspectionStats(inspection, statuses) : null
+            const hasIssues = (stats?.byStatus.bad ?? 0) > 0 || (stats?.byStatus.watch ?? 0) > 0
             return (
-              <div key={inspection.id} className="rounded-3xl bg-paper p-4 shadow-sm">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <Link to={`/inspection/${inspection.id}`} className="text-lg font-black">
+              <div key={inspection.id} className={`card min-w-0 overflow-hidden p-3 sm:p-4 ${hasIssues ? 'border-bad/25' : ''}`}>
+                <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="min-w-0">
+                    <Link to={`/inspection/${inspection.id}`} className="text-base font-semibold break-words text-navy sm:text-lg">
                       {inspection.name}
                     </Link>
-                    <div className="mt-1 text-xs text-muted">
-                      {formatDateTime(inspection.createdAt)} · {inspection.performer} · {inspection.rooms.length} חדרים · {workflowLabel[inspection.workflowStatus]}
+                    <div className="mt-1 text-xs leading-5 text-muted">
+                      {formatDateTime(inspection.createdAt)} · {inspection.performer} · {inspection.rooms.length} חדרים ·{' '}
+                      {workflowLabel[inspection.workflowStatus]}
                       {stats ? ` · ${stats.byStatus.bad ?? 0} לא תקינים` : ''}
                     </div>
                     <div className="mt-2 line-clamp-2 text-xs text-muted">
@@ -50,27 +56,28 @@ export function ArchivePage() {
                       {inspection.rooms.length > 12 ? '…' : ''}
                     </div>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="grid grid-cols-2 gap-2 sm:flex sm:shrink-0">
                     <button
                       type="button"
-                      className="rounded-xl bg-cream px-3 py-2 text-xs font-bold"
+                      className="btn-secondary w-full px-3 text-sm sm:w-auto"
                       onClick={() => {
                         void import('../lib/exportExcel').then(({ exportInspectionExcel }) => {
                           exportInspectionExcel(inspection, statuses)
                         })
                       }}
                     >
+                      <FileSpreadsheet size={14} strokeWidth={1.7} />
                       Excel
                     </button>
-                    <Link to={`/inspection/${inspection.id}`} className="rounded-xl bg-navy px-3 py-2 text-xs font-bold text-cream">
+                    <Link to={`/inspection/${inspection.id}`} className="btn-primary w-full px-3 text-sm sm:w-auto">
                       פתח
                     </Link>
                   </div>
                 </div>
                 {stats && (
-                  <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-100">
+                  <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-cream">
                     <div
-                      className="h-full bg-sea"
+                      className="h-full bg-navy"
                       style={{ width: `${stats.totalRooms ? (stats.checkedRooms / stats.totalRooms) * 100 : 0}%` }}
                     />
                   </div>

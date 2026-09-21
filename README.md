@@ -42,27 +42,43 @@ npm run preview
 
 ## 4. Environment Variables
 
-אין משתני סביבה נדרשים. אין API keys ואין סיסמאות בקוד.
+בדיקות המלון עצמן לא דורשות משתני סביבה.
 
-הקובץ `.env.example` קיים לתיעוד בלבד. אין צורך ליצור `.env` כדי שהאפליקציה תעבוד, ואין צורך להגדיר Environment Variables ב-Vercel.
+מנגנון Admin (פתיחה/סגירה של Holikar) כן דורש משתנים בשרת. הסיסמה לא נשמרת בקוד ולא ב-Frontend.
+
+העתיקו `.env.example` ל-`.env` מקומי (הקובץ `.env` לא עולה ל-GitHub):
+
+```text
+HOLIKAR_ADMIN_USER=
+HOLIKAR_ADMIN_PASSWORD_HASH=
+HOLIKAR_SESSION_SECRET=
+UPSTASH_REDIS_REST_URL=
+UPSTASH_REDIS_REST_TOKEN=
+```
+
+יצירת Hash לסיסמה (בלי לכתוב את הסיסמה בקוד):
+
+```bash
+npm run admin:hash -- "your-strong-password"
+```
+
+הדביקו את הפלט ב-`HOLIKAR_ADMIN_PASSWORD_HASH`.  
+`HOLIKAR_SESSION_SECRET` צריך מחרוזת ארוכה ואקראית (למשל 32 תווים).
+
+ב-Vercel: Settings → Environment Variables — אותם שמות, בלי לשים סיסמה גלויה.
+
+עבור מצב סגור/פתוח **גלובלי בין מכשירים** ב-Vercel חובה Redis (Upstash חינמי או Vercel KV). בלי זה המצב עלול להישמר רק בזיכרון של שרת בודד.
 
 ## 5. Database
 
-אין מסד נתונים בשרת.
+בדיקות, תבניות, סטטוסים והגדרות נשמרים ב-IndexedDB בדפדפן של המשתמש (Dexie). זה ארכיון מקומי לכל מכשיר.
 
-Holikar שומרת הכל ב-IndexedDB בתוך הדפדפן של המשתמש (דרך Dexie):
+מצב הפעלה/כיבוי של Holikar (Admin Lock) נשמר ב-Backend:
 
-- בדיקות
-- תבניות
-- סטטוסים
-- הגדרות (שם מבצע, מלון, מחלקה, חדרים)
+- מקומית: קובץ `data/system-lock.json` (לא עולה ל-GitHub)
+- ב-Vercel: Redis לפי משתני הסביבה למעלה
 
-משמעות לפרסום:
-
-- כל מכשיר / דפדפן מחזיק ארכיון משלו
-- ניקוי נתוני האתר בדפדפן מוחק את הארכיון המקומי
-- אפשר לגבות ולשחזר מתוך מסך **הגדרות** (קובץ JSON)
-- Vercel מארח רק את קבצי ה-frontend הסטטיים
+אין צורך במסד נתונים נפרד לבדיקות החדרים.
 
 ## 6. מה להגדיר ב-Vercel
 
@@ -71,9 +87,8 @@ Holikar שומרת הכל ב-IndexedDB בתוך הדפדפן של המשתמש (
 1. ב-Vercel: **Add New… → Project**.
 2. בוחרים את ה-Repository של Holikar.
 3. Framework Preset: **Vite** (אוטומטי; מוגדר גם ב-`vercel.json`).
-4. Root Directory: השארת ברירת המחדל (שורש הריפו).
-5. אין צורך ב-Environment Variables.
-6. Deploy.
+4. מגדירים Environment Variables של Admin (ראה סעיף 4). בלי הסיסמה עצמה.
+5. Deploy.
 
 הקובץ `vercel.json` כבר מגדיר:
 

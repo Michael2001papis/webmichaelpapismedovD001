@@ -28,20 +28,20 @@ export function ReportDocument({
   }
 
   return (
-    <div dir="rtl" className="w-[1100px] bg-white p-8 text-black" style={{ fontFamily: 'Assistant, Arial, sans-serif' }}>
-      <div className="mb-6 flex items-start justify-between border-b-4 border-[#0b1f33] pb-4">
+    <div dir="rtl" className="w-[1100px] bg-white p-10 text-[#1E1E1E]" style={{ fontFamily: 'Heebo, Assistant, Arial, sans-serif' }}>
+      <div className="mb-6 flex items-start justify-between border-b border-[#24364A] pb-5">
         <div>
-          <div className="text-xs font-bold tracking-[0.25em] text-[#c4a35a]">HOLIKAR</div>
-          <h1 className="mt-1 text-3xl font-black">{inspection.name}</h1>
-          <div className="mt-2 space-y-0.5 text-sm">
-            <div>תאריך הדוח: {formatDateTime(Date.now())}</div>
+          <div className="text-[11px] font-semibold tracking-[0.28em] text-[#C8A96B]">HOLIKAR</div>
+          <h1 className="mt-1 text-3xl font-bold text-[#24364A]">{inspection.name}</h1>
+          <div className="mt-3 space-y-0.5 text-sm text-[#5E6368]">
+            <div>מלון יאכט הרצליה · {inspection.hotel}</div>
+            <div>מבצע: {inspection.performer}</div>
+            <div>מחלקה: {inspection.department}</div>
+            <div>תאריך ושעה: {formatDateTime(Date.now())}</div>
             <div>נוצרה: {formatDateTime(inspection.createdAt)}</div>
-            <div>{inspection.hotel}</div>
-            <div>{inspection.performer}</div>
-            <div>{inspection.department}</div>
           </div>
         </div>
-        <div className="rounded-2xl bg-[#f4efe4] px-4 py-3 text-sm">
+        <div className="rounded-xl border border-[#24364A1a] bg-[#F6F0E6] px-4 py-3 text-sm">
           <div>חדרים: {stats.totalRooms}</div>
           <div>הושלמו: {stats.checkedRooms}</div>
           <div>לא תקינים: {stats.byStatus.bad ?? 0}</div>
@@ -52,25 +52,25 @@ export function ReportDocument({
       <table className="w-full border-collapse text-[11px]">
         <thead>
           <tr>
-            <th className="border border-slate-300 bg-[#0b1f33] px-2 py-2 text-right font-bold text-white">חדר</th>
+            <th className="border border-[#d8d2c8] bg-[#24364A] px-2 py-2 text-right font-semibold text-white">חדר</th>
             {columns.map((column) => (
-              <th key={column.id} className="border border-slate-300 bg-[#0b1f33] px-2 py-2 text-right font-bold text-white">
+              <th key={column.id} className="border border-[#d8d2c8] bg-[#24364A] px-2 py-2 text-right font-semibold text-white">
                 {column.name}
               </th>
             ))}
           </tr>
         </thead>
         <tbody>
-          {inspection.rooms.map((room) => (
-            <tr key={room}>
-              <td className="border border-slate-300 px-2 py-1.5 font-bold">{room}</td>
+          {inspection.rooms.map((room, index) => (
+            <tr key={room} style={{ background: index % 2 ? '#F6F0E6' : '#FCFAF6' }}>
+              <td className="border border-[#d8d2c8] px-2 py-1.5 font-bold text-[#24364A]">{room}</td>
               {columns.map((column) => {
                 const cell = cellOf(inspection, room, column.id, missing)
                 const status = statuses.find((item) => item.id === cell.statusId)
                 return (
                   <td
                     key={column.id}
-                    className="border border-slate-300 px-2 py-1.5 font-bold"
+                    className="border border-[#d8d2c8] px-2 py-1.5 font-semibold"
                     style={{ background: status?.bg, color: status?.color }}
                   >
                     {status?.name}
@@ -85,23 +85,23 @@ export function ReportDocument({
 
       {notes.length > 0 && (
         <div className="mt-8">
-          <h2 className="mb-3 text-xl font-black">הערות וליקויים</h2>
+          <h2 className="mb-3 text-xl font-bold text-[#24364A]">הערות וליקויים</h2>
           <table className="w-full border-collapse text-sm">
             <thead>
               <tr>
-                <th className="border border-slate-300 bg-slate-100 px-2 py-2 text-right">חדר</th>
-                <th className="border border-slate-300 bg-slate-100 px-2 py-2 text-right">בדיקה</th>
-                <th className="border border-slate-300 bg-slate-100 px-2 py-2 text-right">סטטוס</th>
-                <th className="border border-slate-300 bg-slate-100 px-2 py-2 text-right">הערה</th>
+                <th className="border border-[#d8d2c8] bg-[#24364A] px-2 py-2 text-right font-semibold text-white">חדר</th>
+                <th className="border border-[#d8d2c8] bg-[#24364A] px-2 py-2 text-right font-semibold text-white">בדיקה</th>
+                <th className="border border-[#d8d2c8] bg-[#24364A] px-2 py-2 text-right font-semibold text-white">סטטוס</th>
+                <th className="border border-[#d8d2c8] bg-[#24364A] px-2 py-2 text-right font-semibold text-white">הערה</th>
               </tr>
             </thead>
             <tbody>
               {notes.map((item, index) => (
-                <tr key={index}>
-                  <td className="border border-slate-300 px-2 py-2 font-bold">{item.room}</td>
-                  <td className="border border-slate-300 px-2 py-2">{item.check}</td>
-                  <td className="border border-slate-300 px-2 py-2">{item.status}</td>
-                  <td className="border border-slate-300 px-2 py-2">{item.note || '—'}</td>
+                <tr key={index} style={{ background: index % 2 ? '#F6F0E6' : '#FCFAF6' }}>
+                  <td className="border border-[#d8d2c8] px-2 py-2 font-bold">{item.room}</td>
+                  <td className="border border-[#d8d2c8] px-2 py-2">{item.check}</td>
+                  <td className="border border-[#d8d2c8] px-2 py-2">{item.status}</td>
+                  <td className="border border-[#d8d2c8] px-2 py-2">{item.note || '—'}</td>
                 </tr>
               ))}
             </tbody>
@@ -109,8 +109,8 @@ export function ReportDocument({
         </div>
       )}
 
-      <div className="mt-10 border-t border-slate-300 pt-3 text-center text-xs text-slate-500">
-        © Michael Papismedov
+      <div className="mt-10 border-t border-[#d8d2c8] pt-3 text-center text-xs text-[#5E6368]">
+        © Michael Papismedov | Holikar
       </div>
     </div>
   )

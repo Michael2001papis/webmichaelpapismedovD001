@@ -32,7 +32,7 @@ export function CellNote({
 
   return (
     <textarea
-      className="mt-3 w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm"
+      className="field mt-3 text-sm"
       rows={3}
       placeholder={placeholder}
       value={value}

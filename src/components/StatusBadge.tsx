@@ -11,7 +11,7 @@ export function StatusBadge({
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold',
+        'inline-flex max-w-full items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold',
         className,
       )}
       style={{ background: status.bg, color: status.color }}
@@ -37,20 +37,20 @@ export function StatusPicker({
   const rest = statuses.filter((status) => !status.shortcut)
   return (
     <div className="space-y-2">
-      <div className={cn('grid gap-2', compact ? 'grid-cols-3' : 'grid-cols-3 sm:grid-cols-3')}>
+      <div className={cn('grid gap-2', compact ? 'grid-cols-3' : 'grid-cols-2 min-[380px]:grid-cols-3')}>
         {quick.map((status) => (
           <button
             key={status.id}
             type="button"
             onClick={() => onChange(status.id)}
             className={cn(
-              'min-h-12 rounded-xl border-2 px-2 py-2 text-sm font-bold',
+              'min-h-14 rounded-xl border px-2 py-2 text-xs font-semibold transition-shadow duration-150 sm:text-sm',
               value === status.id ? 'border-current shadow-sm' : 'border-transparent opacity-90',
             )}
             style={{ background: status.bg, color: status.color }}
           >
-            <div className="text-lg leading-none">{status.shortcut}</div>
-            {status.name}
+            <div className="text-base leading-none sm:text-lg">{status.shortcut}</div>
+            <span className="mt-1 block leading-tight">{status.name}</span>
           </button>
         ))}
       </div>
@@ -62,8 +62,8 @@ export function StatusPicker({
               type="button"
               onClick={() => onChange(status.id)}
               className={cn(
-                'rounded-full px-3 py-1.5 text-xs font-bold',
-                value === status.id ? 'ring-2 ring-navy/30' : '',
+                'min-h-10 rounded-full px-3 py-2 text-xs font-semibold',
+                value === status.id ? 'ring-2 ring-navy/25' : '',
               )}
               style={{ background: status.bg, color: status.color }}
             >

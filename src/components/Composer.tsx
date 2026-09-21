@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { createInspection } from '../lib/db'
 import { parseInspectionRequest, suggestInspectionName } from '../lib/parser'
 import { resolveHotelRooms } from '../lib/rooms'
@@ -8,7 +8,7 @@ import { CheckEditor } from './CheckEditor'
 import { RoomPicker } from './RoomPicker'
 
 const EXAMPLE =
-  'אני צריך לבדוק בחדרים 201, 217, 241, 249 ו-253: שיפוע מזגן, ניקוז מקלחון, דלת כניסה וכורסאות.'
+  'לדוגמה: חדרים 201, 217, 241 ו-249 — בדיקת שיפוע מזגן, ניקוז ודלת כניסה.'
 
 export function Composer({ settings }: { settings: AppSettings }) {
   const navigate = useNavigate()
@@ -57,37 +57,37 @@ export function Composer({ settings }: { settings: AppSettings }) {
   }
 
   return (
-    <section className="rounded-3xl bg-navy p-4 text-cream shadow-xl sm:p-6">
+    <section id="composer" className="card min-w-0 overflow-hidden p-4 sm:p-6">
       <div className="mb-4">
-        <div className="text-gold text-xs font-bold tracking-wide">יצירת בדיקה חדשה</div>
-        <h2 className="mt-1 text-2xl font-extrabold">מה צריך לבדוק היום?</h2>
-        <p className="mt-1 text-sm text-cream/70">
-          כתוב בשפה חופשית את החדרים ואת הבדיקות. המערכת תזהה לבד ותבנה טבלה.
+        <div className="text-[11px] font-semibold tracking-[0.18em] text-gold uppercase">יצירת בדיקה</div>
+        <h2 className="mt-1 text-xl font-bold text-navy sm:text-2xl">מה צריך לבדוק היום?</h2>
+        <p className="mt-1 text-sm text-muted">
+          כתבו בשפה חופשית את החדרים ואת הבדיקות. המערכת תזהה לבד ותבנה טבלה.
         </p>
       </div>
 
       <textarea
         value={text}
         onChange={(e) => setText(e.target.value)}
-        rows={5}
-        className="w-full resize-y rounded-2xl border-0 bg-navy-2 px-4 py-3 text-base text-cream outline-none ring-2 ring-transparent placeholder:text-cream/35 focus:ring-gold/50"
+        rows={6}
+        className="field min-h-36 resize-y text-base leading-7"
         placeholder={EXAMPLE}
       />
 
       {(parsed.rooms.length > 0 || parsed.checks.length > 0 || parsed.allRooms) && (
         <div className="mt-3 space-y-2 text-sm">
           <div>
-            <span className="text-cream/60">חדרים שזוהו: </span>
+            <span className="text-muted">חדרים שזוהו: </span>
             {(parsed.allRooms ? ['כל חדרי המלון'] : parsed.rooms).map((room) => (
-              <span key={room} className="ml-1 inline-block rounded-lg bg-white/10 px-2 py-0.5 text-xs font-bold">
+              <span key={room} className="ml-1 inline-block rounded-md bg-cream px-2 py-0.5 text-xs font-semibold text-navy">
                 {room}
               </span>
             ))}
           </div>
           <div>
-            <span className="text-cream/60">בדיקות שזוהו: </span>
+            <span className="text-muted">בדיקות שזוהו: </span>
             {parsed.checks.map((check) => (
-              <span key={check} className="ml-1 inline-block rounded-lg bg-gold/20 px-2 py-0.5 text-xs font-bold text-gold">
+              <span key={check} className="ml-1 inline-block rounded-md bg-gold/15 px-2 py-0.5 text-xs font-semibold text-navy">
                 {check}
               </span>
             ))}
@@ -95,14 +95,16 @@ export function Composer({ settings }: { settings: AppSettings }) {
         </div>
       )}
 
-      <div className="mt-3 flex flex-wrap gap-2">
-        <button
-          type="button"
-          onClick={applyParse}
-          className="rounded-xl bg-gold px-4 py-2 text-sm font-extrabold text-navy"
-        >
+      <div className="mt-4 grid grid-cols-1 gap-2 min-[380px]:grid-cols-2 lg:flex lg:flex-wrap">
+        <button type="button" onClick={applyParse} className="btn-primary w-full lg:w-auto">
           זהה חדרים ובדיקות
         </button>
+        <button type="button" onClick={() => setManual(true)} className="btn-secondary w-full lg:w-auto">
+          בנייה ידנית
+        </button>
+        <Link to="/templates" className="btn-secondary w-full lg:w-auto">
+          טען תבנית
+        </Link>
         <button
           type="button"
           onClick={() => {
@@ -113,32 +115,25 @@ export function Composer({ settings }: { settings: AppSettings }) {
             setChecks(result.checks)
             setName(suggestInspectionName(result.checks))
           }}
-          className="rounded-xl bg-white/10 px-4 py-2 text-sm font-bold"
+          className="btn-ghost w-full lg:w-auto"
         >
           טען דוגמה
-        </button>
-        <button
-          type="button"
-          onClick={() => setManual(true)}
-          className="rounded-xl bg-white/10 px-4 py-2 text-sm font-bold"
-        >
-          בנייה ידנית
         </button>
       </div>
 
       {(rooms.length > 0 || checks.length > 0 || parsed.rooms.length > 0 || manual) && (
-        <div className="mt-5 space-y-4 rounded-2xl bg-white p-4 text-ink">
-          <label className="block text-sm font-bold">
+        <div className="mt-5 space-y-4 rounded-[12px] border border-line bg-cream/60 p-3 sm:p-4">
+          <label className="block text-sm font-semibold text-navy">
             שם הבדיקה
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 font-medium"
+              className="field mt-1 font-medium"
               placeholder="למשל בדיקת מזגנים"
             />
           </label>
           <div>
-            <div className="mb-2 text-sm font-bold">חדרים</div>
+            <div className="mb-2 text-sm font-semibold text-navy">חדרים</div>
             <RoomPicker
               hotelRooms={hotelRooms}
               value={rooms}
@@ -149,7 +144,7 @@ export function Composer({ settings }: { settings: AppSettings }) {
             />
           </div>
           <div>
-            <div className="mb-2 text-sm font-bold">עמודות בדיקה</div>
+            <div className="mb-2 text-sm font-semibold text-navy">עמודות בדיקה</div>
             <CheckEditor
               value={checks}
               onChange={(next) => {
@@ -162,7 +157,7 @@ export function Composer({ settings }: { settings: AppSettings }) {
             type="button"
             disabled={busy || rooms.length === 0 || checks.length === 0}
             onClick={create}
-            className="w-full rounded-2xl bg-sea py-3 text-base font-extrabold text-white disabled:opacity-40"
+            className="btn-primary w-full py-3 text-base"
           >
             {busy ? 'יוצר טבלה...' : 'צור טבלת עבודה'}
           </button>

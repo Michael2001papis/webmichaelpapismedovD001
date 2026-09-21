@@ -33,7 +33,7 @@ export function RoomPicker({
       <div className="flex flex-wrap gap-2">
         <button
           type="button"
-          className="rounded-full bg-navy px-3 py-1.5 text-xs font-bold text-cream"
+          className="min-h-11 rounded-full bg-navy px-3 py-2 text-xs font-semibold text-paper"
           onClick={() => onChange(hotelRooms)}
         >
           כל חדרי המלון
@@ -42,7 +42,7 @@ export function RoomPicker({
           <button
             key={range.floor}
             type="button"
-            className="rounded-full bg-cream px-3 py-1.5 text-xs font-bold text-navy"
+            className="rounded-full bg-cream px-3 py-2 text-xs font-semibold text-navy min-h-11"
             onClick={() => add(floorRooms(range.floor))}
           >
             קומה {range.floor}
@@ -50,20 +50,21 @@ export function RoomPicker({
         ))}
         <button
           type="button"
-          className="rounded-full bg-white px-3 py-1.5 text-xs font-bold text-muted"
+          className="min-h-11 rounded-full bg-white px-3 py-2 text-xs font-bold text-muted"
           onClick={() => onChange([])}
         >
           נקה
         </button>
       </div>
 
-      <div className="flex flex-wrap items-end gap-2">
+      <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-end">
         <label className="text-xs font-semibold text-muted">
           מ-
           <input
             value={from}
             onChange={(e) => setFrom(e.target.value)}
-            className="mt-1 block w-24 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-ink"
+            className="field mt-1 block w-full sm:w-24"
+            inputMode="numeric"
           />
         </label>
         <label className="text-xs font-semibold text-muted">
@@ -71,19 +72,20 @@ export function RoomPicker({
           <input
             value={to}
             onChange={(e) => setTo(e.target.value)}
-            className="mt-1 block w-24 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-ink"
+            className="field mt-1 block w-full sm:w-24"
+            inputMode="numeric"
           />
         </label>
         <button
           type="button"
-          className="rounded-xl bg-sea px-4 py-2 text-sm font-bold text-white"
+          className="btn-primary col-span-2 w-full px-4 text-sm sm:col-auto sm:w-auto"
           onClick={() => add(rangeRooms(from, to))}
         >
           הוסף טווח
         </button>
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex min-w-0 gap-2">
         <input
           value={manual}
           onChange={(e) => setManual(e.target.value)}
@@ -93,12 +95,12 @@ export function RoomPicker({
               applyManual()
             }
           }}
-          placeholder="חדרים ספציפיים: 201 217 241"
-          className="min-w-0 flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+          placeholder="חדרים: 201 217 241"
+          className="field min-w-0 flex-1"
         />
         <button
           type="button"
-          className="rounded-xl bg-navy px-4 py-2 text-sm font-bold text-cream"
+          className="btn-primary shrink-0 px-3 text-sm sm:px-4"
           onClick={applyManual}
         >
           הוסף
@@ -111,7 +113,7 @@ export function RoomPicker({
           <button
             key={room}
             type="button"
-            className="rounded-lg bg-cream px-2 py-1 text-xs font-bold text-navy"
+            className="min-h-11 rounded-lg bg-cream px-3 py-2 text-xs font-bold text-navy"
             onClick={() => onChange(selected.filter((item) => item !== room))}
             title="הסר חדר"
           >

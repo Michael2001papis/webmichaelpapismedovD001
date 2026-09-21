@@ -30,20 +30,26 @@ export function TemplatesPage() {
   }
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-3xl font-black text-navy">תבניות</h1>
-      <p className="text-sm text-muted">פתחו תבנית, בחרו חדרים, והתחילו לעבוד מיד.</p>
+    <div className="space-y-5">
+      <div>
+        <h1 className="text-xl font-bold text-navy sm:text-2xl md:text-3xl">תבניות</h1>
+        <p className="mt-1 text-sm text-muted">פתחו תבנית, בחרו חדרים, והתחילו לעבוד מיד.</p>
+      </div>
 
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {templates.map((template) => (
           <button
             key={template.id}
             type="button"
             onClick={() => setActiveId(template.id)}
-            className={`rounded-3xl p-4 text-right shadow-sm ${activeId === template.id ? 'bg-navy text-cream' : 'bg-paper'}`}
+            className={`min-w-0 rounded-[14px] border p-4 text-right transition-colors duration-150 ${
+              activeId === template.id
+                ? 'border-gold bg-navy text-paper'
+                : 'card hover:border-navy/20'
+            }`}
           >
-            <div className="text-lg font-black">{template.name}</div>
-            <div className={`mt-1 text-xs ${activeId === template.id ? 'text-cream/70' : 'text-muted'}`}>
+            <div className="text-lg font-semibold break-words">{template.name}</div>
+            <div className={`mt-1 text-xs break-words ${activeId === template.id ? 'text-paper/70' : 'text-muted'}`}>
               {template.columns.join(' · ')}
             </div>
           </button>
@@ -51,13 +57,16 @@ export function TemplatesPage() {
       </div>
 
       {active && (
-        <section className="rounded-3xl bg-paper p-4 shadow-sm">
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-lg font-extrabold">התחל מ{active.name}</h2>
+        <section className="card p-4 sm:p-5">
+          <div className="mb-3 flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <h2 className="min-w-0 text-lg font-semibold break-words text-navy">התחל מ{active.name}</h2>
             <button
               type="button"
-              className="text-xs font-bold text-red-700"
-              onClick={() => void db.templates.delete(active.id)}
+              className="btn-danger min-h-11 w-full px-3 text-xs sm:w-auto"
+              onClick={() => {
+                if (!confirm(`למחוק את התבנית ${active.name}?`)) return
+                void db.templates.delete(active.id)
+              }}
             >
               מחק תבנית
             </button>
@@ -67,25 +76,25 @@ export function TemplatesPage() {
             type="button"
             onClick={() => void start()}
             disabled={rooms.length === 0}
-            className="mt-4 w-full rounded-2xl bg-sea py-3 font-extrabold text-white disabled:opacity-40"
+            className="btn-primary mt-4 w-full py-3"
           >
             צור טבלה מהתבנית
           </button>
         </section>
       )}
 
-      <section className="rounded-3xl bg-paper p-4 shadow-sm">
-        <h2 className="mb-3 text-lg font-extrabold">תבנית חדשה</h2>
+      <section className="card p-4 sm:p-5">
+        <h2 className="mb-3 text-lg font-semibold text-navy">תבנית חדשה</h2>
         <input
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
           placeholder="שם התבנית, למשל בדיקת מזגנים"
-          className="mb-3 w-full rounded-xl border border-slate-200 px-3 py-2"
+          className="field mb-3"
         />
         <CheckEditor value={newCols} onChange={setNewCols} />
         <button
           type="button"
-          className="mt-3 rounded-2xl bg-navy px-4 py-2 text-sm font-bold text-cream disabled:opacity-40"
+          className="btn-primary mt-3 px-4 text-sm"
           disabled={!newName.trim() || newCols.length === 0}
           onClick={async () => {
             await db.templates.add({

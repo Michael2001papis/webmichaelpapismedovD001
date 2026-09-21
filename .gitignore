@@ -17,6 +17,9 @@ build
 *.local
 *.tsbuildinfo
 
+# Local admin lock file
+data
+
 # Environment (keep the example)
 .env
 .env.*

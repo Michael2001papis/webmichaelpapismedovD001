@@ -12,18 +12,18 @@ export function HomePage() {
   const inspections = useLiveQuery(() => db.inspections.orderBy('updatedAt').reverse().toArray()) ?? []
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-black text-navy">שלום {firstName(settings.performer)}</h1>
-        <p className="text-sm text-muted">כתוב מה צריך לבדוק — תוך שניות תהיה טבלת עבודה מוכנה.</p>
+        <h1 className="text-xl font-bold break-words text-navy sm:text-2xl md:text-3xl">שלום {firstName(settings.performer)}</h1>
+        <p className="mt-1 text-sm text-muted">סקירה יומית של אחזקת המלון ופתיחת בדיקה חדשה.</p>
       </div>
-      <Composer settings={settings} />
       <Dashboard inspections={inspections} statuses={statuses} />
+      <Composer settings={settings} />
       {inspections.length > 0 && (
         <section>
-          <div className="mb-2 flex items-center justify-between">
-            <h2 className="text-lg font-extrabold">בדיקות אחרונות</h2>
-            <Link to="/archive" className="text-sm font-bold text-sea">
+          <div className="mb-3 flex min-w-0 items-center justify-between gap-3">
+            <h2 className="min-w-0 text-lg font-semibold text-navy">בדיקות אחרונות</h2>
+            <Link to="/archive" className="shrink-0 text-sm font-semibold text-navy hover:text-gold">
               לכל הארכיון
             </Link>
           </div>
@@ -32,15 +32,15 @@ export function HomePage() {
               <Link
                 key={inspection.id}
                 to={`/inspection/${inspection.id}`}
-                className="flex items-center justify-between rounded-2xl bg-paper px-4 py-3 shadow-sm"
+                className="card flex min-w-0 items-start justify-between gap-3 px-3 py-3 transition-colors duration-150 hover:border-navy/20 sm:px-4"
               >
-                <div>
-                  <div className="font-extrabold">{inspection.name}</div>
-                  <div className="text-xs text-muted">
+                <div className="min-w-0 flex-1">
+                  <div className="truncate font-semibold text-navy">{inspection.name}</div>
+                  <div className="mt-0.5 text-xs text-muted">
                     {formatDateTime(inspection.updatedAt)} · {inspection.rooms.length} חדרים
                   </div>
                 </div>
-                <div className="text-xs font-bold text-sea">{workflowLabel[inspection.workflowStatus]}</div>
+                <div className="shrink-0 pt-0.5 text-xs font-semibold text-muted">{workflowLabel[inspection.workflowStatus]}</div>
               </Link>
             ))}
           </div>
