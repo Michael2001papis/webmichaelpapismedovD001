@@ -3,6 +3,8 @@
   "private": true,
   "version": "1.0.0",
   "description": "Holikar — hotel room inspection app for Yacht Hotel Herzliya maintenance",
+  "author": "Michael Papismedov",
+  "license": "SEE LICENSE IN LICENSE.md",
   "type": "module",
   "engines": {
     "node": ">=20"

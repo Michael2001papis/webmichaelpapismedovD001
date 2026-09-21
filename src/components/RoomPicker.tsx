@@ -1,3 +1,13 @@
+/*
+ * Holikar
+ * Copyright © 2026 Michael Papismedov.
+ * All rights reserved.
+ *
+ * Proprietary software.
+ * Unauthorized copying, distribution, modification,
+ * publication or commercial use is prohibited.
+ */
+
 import { useMemo, useState } from 'react'
 import { HOTEL_RANGES, floorRooms, uniqueRooms } from '../lib/rooms'
 

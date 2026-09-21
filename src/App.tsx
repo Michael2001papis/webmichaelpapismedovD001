@@ -1,3 +1,13 @@
+/*
+ * Holikar
+ * Copyright © 2026 Michael Papismedov.
+ * All rights reserved.
+ *
+ * Proprietary software.
+ * Unauthorized copying, distribution, modification,
+ * publication or commercial use is prohibited.
+ */
+
 import { HashRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { Layout } from './components/Layout'
 import { MaintenanceScreen } from './components/MaintenanceScreen'

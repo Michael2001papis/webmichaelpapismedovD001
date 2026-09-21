@@ -1,6 +1,7 @@
 {
   "name": "Holikar",
   "short_name": "Holikar",
+  "description": "Holikar — hotel maintenance & inspection management. © 2026 Michael Papismedov. All rights reserved.",
   "dir": "rtl",
   "lang": "he",
   "start_url": "/",

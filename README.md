@@ -127,6 +127,12 @@ npm install
 
 אחרי שהאתר החי עולה, משתמשים בכתובת של Vercel (לא ב-`localhost`) גם מהמחשב וגם מהטלפון.
 
-## רישיון שימוש
+## Copyright
 
-שימוש פנימי. © Michael Papismedov
+© 2026 Michael Papismedov — Holikar.
+All rights reserved.
+
+This project is proprietary and is not provided as open-source software.
+
+הנוסח המלא נמצא ב-[`COPYRIGHT.md`](COPYRIGHT.md) וב-[`LICENSE.md`](LICENSE.md).
+ספריות צד שלישי נשארות תחת הרישיונות של בעליהן.

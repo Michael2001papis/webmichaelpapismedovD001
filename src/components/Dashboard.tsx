@@ -1,3 +1,13 @@
+/*
+ * Holikar
+ * Copyright © 2026 Michael Papismedov.
+ * All rights reserved.
+ *
+ * Proprietary software.
+ * Unauthorized copying, distribution, modification,
+ * publication or commercial use is prohibited.
+ */
+
 import { AlertTriangle, CheckCircle2, ClipboardList, DoorOpen, Eye } from 'lucide-react'
 import type { Inspection, StatusDefinition } from '../types'
 import { computeInspectionStats } from '../lib/stats'

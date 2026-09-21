@@ -1,4 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Holikar — Copyright © 2026 Michael Papismedov. All rights reserved. Proprietary. -->
+  <title>Holikar</title>
   <rect width="64" height="64" rx="14" fill="#24364A"/>
   <path d="M12 46c8-7 16-7 20 0 4-7 12-7 20 0" fill="none" stroke="#C8A96B" stroke-width="2.5" stroke-linecap="round"/>
   <text x="32" y="36" text-anchor="middle" font-family="Heebo, Arial" font-size="22" font-weight="700" fill="#FCFAF6">H</text>

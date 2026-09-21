@@ -1,3 +1,13 @@
+/*
+ * Holikar
+ * Copyright © 2026 Michael Papismedov.
+ * All rights reserved.
+ *
+ * Proprietary software.
+ * Unauthorized copying, distribution, modification,
+ * publication or commercial use is prohibited.
+ */
+
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import type { Inspection, StatusDefinition } from '../types'

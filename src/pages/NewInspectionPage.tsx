@@ -1,3 +1,13 @@
+/*
+ * Holikar
+ * Copyright © 2026 Michael Papismedov.
+ * All rights reserved.
+ *
+ * Proprietary software.
+ * Unauthorized copying, distribution, modification,
+ * publication or commercial use is prohibited.
+ */
+
 import { useLiveQuery } from 'dexie-react-hooks'
 import { Composer } from '../components/Composer'
 import { db, DEFAULT_SETTINGS } from '../lib/db'

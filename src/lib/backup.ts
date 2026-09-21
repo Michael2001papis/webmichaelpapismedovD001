@@ -1,8 +1,22 @@
+/*
+ * Holikar
+ * Copyright © 2026 Michael Papismedov.
+ * All rights reserved.
+ *
+ * Proprietary software.
+ * Unauthorized copying, distribution, modification,
+ * publication or commercial use is prohibited.
+ */
+
+import { COPYRIGHT } from '../config/copyright'
 import { db } from './db'
 import { formatDate } from './id'
 
 export type HolikarBackup = {
   version: 1
+  product: string
+  owner: string
+  copyright: string
   exportedAt: number
   inspections: unknown[]
   templates: unknown[]
@@ -13,6 +27,9 @@ export type HolikarBackup = {
 export async function buildBackup(): Promise<HolikarBackup> {
   return {
     version: 1,
+    product: COPYRIGHT.product,
+    owner: COPYRIGHT.owner,
+    copyright: COPYRIGHT.text,
     exportedAt: Date.now(),
     inspections: await db.inspections.toArray(),
     templates: await db.templates.toArray(),

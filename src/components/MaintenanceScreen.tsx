@@ -1,4 +1,15 @@
+/*
+ * Holikar
+ * Copyright © 2026 Michael Papismedov.
+ * All rights reserved.
+ *
+ * Proprietary software.
+ * Unauthorized copying, distribution, modification,
+ * publication or commercial use is prohibited.
+ */
+
 import { Lock } from 'lucide-react'
+import { COPYRIGHT } from '../config/copyright'
 
 export function MaintenanceScreen() {
   return (
@@ -18,8 +29,8 @@ export function MaintenanceScreen() {
         </p>
         <p className="mt-5 text-xs leading-6 text-muted sm:text-sm">המערכת נסגרה זמנית על ידי מנהל המערכת.</p>
       </main>
-      <footer className="px-4 py-5 text-center text-[10px] tracking-wide text-muted/80 sm:text-[11px]" dir="ltr">
-        © 2026 Michael Papismedov | Holikar
+      <footer className="px-4 py-5 text-center text-[10px] leading-4 tracking-wide text-balance text-muted/80 sm:text-[11px]" dir="ltr">
+        {COPYRIGHT.text}
       </footer>
     </div>
   )

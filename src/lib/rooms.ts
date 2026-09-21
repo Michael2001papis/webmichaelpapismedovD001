@@ -1,3 +1,13 @@
+/*
+ * Holikar
+ * Copyright © 2026 Michael Papismedov.
+ * All rights reserved.
+ *
+ * Proprietary software.
+ * Unauthorized copying, distribution, modification,
+ * publication or commercial use is prohibited.
+ */
+
 export const HOTEL_RANGES = [
   { floor: 1, start: 101, end: 128 },
   { floor: 2, start: 201, end: 266 },

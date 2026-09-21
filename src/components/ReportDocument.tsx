@@ -1,4 +1,15 @@
+/*
+ * Holikar
+ * Copyright © 2026 Michael Papismedov.
+ * All rights reserved.
+ *
+ * Proprietary software.
+ * Unauthorized copying, distribution, modification,
+ * publication or commercial use is prohibited.
+ */
+
 import type { Inspection, StatusDefinition } from '../types'
+import { COPYRIGHT } from '../config/copyright'
 import { formatDateTime } from '../lib/id'
 import { cellOf, computeInspectionStats, emptyStatusId } from '../lib/stats'
 
@@ -109,8 +120,8 @@ export function ReportDocument({
         </div>
       )}
 
-      <div className="mt-10 border-t border-[#d8d2c8] pt-3 text-center text-xs text-[#5E6368]">
-        © Michael Papismedov | Holikar
+      <div className="mt-10 border-t border-[#d8d2c8] pt-3 text-center text-xs text-[#5E6368]" dir="ltr">
+        {COPYRIGHT.text}
       </div>
     </div>
   )

@@ -1,3 +1,13 @@
+/*
+ * Holikar
+ * Copyright © 2026 Michael Papismedov.
+ * All rights reserved.
+ *
+ * Proprietary software.
+ * Unauthorized copying, distribution, modification,
+ * publication or commercial use is prohibited.
+ */
+
 import {
   Archive,
   ClipboardList,
@@ -8,6 +18,7 @@ import {
 } from 'lucide-react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { NavLink, Outlet } from 'react-router-dom'
+import { COPYRIGHT } from '../config/copyright'
 import { db, DEFAULT_SETTINGS } from '../lib/db'
 import { cn, formatDate } from '../lib/id'
 
@@ -73,9 +84,7 @@ export function Layout() {
             <Outlet />
           </main>
           <footer className="no-print hidden border-t border-line px-6 py-4 text-center text-[11px] text-muted lg:block" dir="ltr">
-            © 2026 Michael Papismedov | Holikar
-            <span className="mx-2 opacity-40">·</span>
-            Internal Maintenance Management System
+            {COPYRIGHT.text}
           </footer>
         </div>
       </div>
@@ -102,8 +111,8 @@ export function Layout() {
           </NavLink>
         ))}
       </nav>
-      <footer className="no-print px-3 pb-[calc(4.4rem+env(safe-area-inset-bottom))] pt-2 text-center text-[10px] text-muted sm:px-4 lg:hidden" dir="ltr">
-        © 2026 Michael Papismedov | Holikar
+      <footer className="no-print px-3 pb-[calc(4.4rem+env(safe-area-inset-bottom))] pt-2 text-center text-[10px] leading-4 text-balance text-muted sm:px-4 lg:hidden" dir="ltr">
+        {COPYRIGHT.text}
       </footer>
     </div>
   )

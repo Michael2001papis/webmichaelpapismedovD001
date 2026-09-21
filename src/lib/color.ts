@@ -1,3 +1,13 @@
+/*
+ * Holikar
+ * Copyright © 2026 Michael Papismedov.
+ * All rights reserved.
+ *
+ * Proprietary software.
+ * Unauthorized copying, distribution, modification,
+ * publication or commercial use is prohibited.
+ */
+
 export function tint(hex: string, amount = 0.86): string {
   const raw = hex.replace('#', '')
   if (raw.length !== 6) return '#e8edf2'
