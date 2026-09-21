@@ -1,11 +1,8 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
-let loaded = false
-
 export function loadLocalEnv() {
-  if (loaded || process.env.VERCEL) return
-  loaded = true
+  if (process.env.VERCEL) return
   const file = resolve(process.cwd(), '.env')
   if (!existsSync(file)) return
   for (const line of readFileSync(file, 'utf8').split(/\r?\n/)) {
@@ -21,7 +18,7 @@ export function loadLocalEnv() {
     ) {
       value = value.slice(1, -1)
     }
-    if (process.env[key] === undefined) process.env[key] = value
+    process.env[key] = value
   }
 }
 

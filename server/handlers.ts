@@ -58,7 +58,7 @@ async function login(req: ApiRequest): Promise<ApiResponse> {
     return json(429, { error: 'too_many_attempts', retryAfter: limit.retryAfter })
   }
   const body = req.body as { username?: unknown; password?: unknown }
-  const username = typeof body.username === 'string' ? body.username : ''
+  const username = typeof body.username === 'string' ? body.username.trim() : ''
   const password = typeof body.password === 'string' ? body.password : ''
   const userOk = safeEqual(username, user)
   const passOk = password.length > 0 && verifyPassword(password, hash)

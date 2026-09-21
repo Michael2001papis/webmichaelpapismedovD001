@@ -55,6 +55,7 @@ export function AdminPage() {
         return
       }
       setPassword('')
+      setUsername('')
       setSession(data)
     } catch {
       setError('לא ניתן להתחבר כרגע.')
@@ -150,7 +151,7 @@ export function AdminPage() {
             </div>
           </section>
         ) : (
-          <form className="card min-w-0 overflow-hidden p-4 sm:p-6" onSubmit={login}>
+          <form className="card min-w-0 overflow-hidden p-4 sm:p-6" onSubmit={login} autoComplete="off">
             <h1 className="text-xl font-bold text-navy">כניסת מנהל</h1>
             <p className="mt-1 text-sm text-muted">גישה למסך ניהול בלבד.</p>
             <label className="mt-5 block text-sm font-semibold text-navy">
@@ -159,7 +160,7 @@ export function AdminPage() {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 className="field mt-1"
-                autoComplete="username"
+                autoComplete="off"
                 required
               />
             </label>
@@ -170,7 +171,7 @@ export function AdminPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="field mt-1"
-                autoComplete="current-password"
+                autoComplete="new-password"
                 required
               />
             </label>
