@@ -5,4 +5,4 @@
  *
  * אחרי שינוי: Build חדש, ואז העלאה ל-GitHub.
  */
-export const SITE_ENABLED = true
+export const SITE_ENABLED = false
