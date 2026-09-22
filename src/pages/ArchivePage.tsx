@@ -12,11 +12,14 @@ import { FileSpreadsheet } from 'lucide-react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { workflowLabel } from '../i18n'
 import { db } from '../lib/db'
 import { formatDateTime } from '../lib/id'
-import { computeInspectionStats, workflowLabel } from '../lib/stats'
+import { useSession } from '../lib/sessionContext'
+import { computeInspectionStats } from '../lib/stats'
 
 export function ArchivePage() {
+  const { t, locale } = useSession()
   const inspections = useLiveQuery(() => db.inspections.orderBy('updatedAt').reverse().toArray()) ?? []
   const statuses = useLiveQuery(() => db.statuses.orderBy('order').toArray()) ?? []
   const [query, setQuery] = useState('')
@@ -31,19 +34,19 @@ export function ArchivePage() {
   )
 
   return (
-    <div className="space-y-5">
+    <div className="holikar-stack space-y-5">
       <div>
-        <h1 className="text-xl font-bold text-navy sm:text-2xl md:text-3xl">ארכיון בדיקות</h1>
-        <p className="mt-1 text-sm text-muted">כל הבדיקות שנשמרו בדפדפן זה.</p>
+        <h1 className="text-xl font-bold text-navy sm:text-2xl md:text-3xl">{t('archive.title')}</h1>
+        <p className="mt-1 text-sm text-muted">{t('archive.lead')}</p>
       </div>
       <input
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="חיפוש לפי שם, חדר או מבצע"
+        placeholder={t('archive.search')}
         className="field"
       />
       {filtered.length === 0 ? (
-        <div className="card p-6 text-muted">אין בדיקות בארכיון עדיין.</div>
+        <div className="card p-6 text-muted">{t('archive.empty')}</div>
       ) : (
         <div className="space-y-3">
           {filtered.map((inspection) => {
@@ -57,12 +60,12 @@ export function ArchivePage() {
                       {inspection.name}
                     </Link>
                     <div className="mt-1 text-xs leading-5 text-muted">
-                      {formatDateTime(inspection.createdAt)} · {inspection.performer} · {inspection.rooms.length} חדרים ·{' '}
-                      {workflowLabel[inspection.workflowStatus]}
-                      {stats ? ` · ${stats.byStatus.bad ?? 0} לא תקינים` : ''}
+                      {formatDateTime(inspection.createdAt, locale)} · {inspection.performer} ·{' '}
+                      {t('archive.rooms', { n: inspection.rooms.length })} · {workflowLabel(locale, inspection.workflowStatus)}
+                      {stats ? ` · ${t('archive.bad', { n: stats.byStatus.bad ?? 0 })}` : ''}
                     </div>
                     <div className="mt-2 line-clamp-2 text-xs text-muted">
-                      חדרים: {inspection.rooms.slice(0, 12).join(', ')}
+                      {t('archive.roomsLabel')} {inspection.rooms.slice(0, 12).join(', ')}
                       {inspection.rooms.length > 12 ? '…' : ''}
                     </div>
                   </div>
@@ -72,7 +75,7 @@ export function ArchivePage() {
                       className="btn-secondary w-full px-3 text-sm sm:w-auto"
                       onClick={() => {
                         void import('../lib/exportExcel').then(({ exportInspectionExcel }) => {
-                          exportInspectionExcel(inspection, statuses)
+                          exportInspectionExcel(inspection, statuses, locale)
                         })
                       }}
                     >
@@ -80,7 +83,7 @@ export function ArchivePage() {
                       Excel
                     </button>
                     <Link to={`/inspection/${inspection.id}`} className="btn-primary w-full px-3 text-sm sm:w-auto">
-                      פתח
+                      {t('archive.open')}
                     </Link>
                   </div>
                 </div>

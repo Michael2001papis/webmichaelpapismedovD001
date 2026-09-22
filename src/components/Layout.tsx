@@ -21,19 +21,21 @@ import { NavLink, Outlet } from 'react-router-dom'
 import { COPYRIGHT } from '../config/copyright'
 import { db, DEFAULT_SETTINGS } from '../lib/db'
 import { cn, formatDate } from '../lib/id'
-
-const nav = [
-  { to: '/', label: 'בית', short: 'בית', icon: Home, end: true },
-  { to: '/new', label: 'בדיקה חדשה', short: 'חדשה', icon: PlusSquare, end: false },
-  { to: '/archive', label: 'ארכיון', short: 'ארכיון', icon: Archive, end: false },
-  { to: '/templates', label: 'תבניות', short: 'תבניות', icon: ClipboardList, end: false },
-  { to: '/reports', label: 'דוחות', short: 'דוחות', icon: FileBarChart, end: false },
-  { to: '/settings', label: 'הגדרות', short: 'הגדרות', icon: Settings, end: false },
-]
+import { useSession } from '../lib/sessionContext'
 
 export function Layout() {
+  const { t, locale, session, switchUser } = useSession()
   const settings = useLiveQuery(() => db.settings.get('main')) ?? DEFAULT_SETTINGS
-  const today = formatDate(Date.now())
+  const today = formatDate(Date.now(), locale)
+  const performer = session?.name ?? settings.performer
+  const nav = [
+    { to: '/', label: t('nav.home'), short: t('nav.home'), icon: Home, end: true },
+    { to: '/new', label: t('nav.new'), short: t('nav.newShort'), icon: PlusSquare, end: false },
+    { to: '/archive', label: t('nav.archive'), short: t('nav.archive'), icon: Archive, end: false },
+    { to: '/templates', label: t('nav.templates'), short: t('nav.templates'), icon: ClipboardList, end: false },
+    { to: '/reports', label: t('nav.reports'), short: t('nav.reports'), icon: FileBarChart, end: false },
+    { to: '/settings', label: t('nav.settings'), short: t('nav.settings'), icon: Settings, end: false },
+  ]
 
   return (
     <div className="min-h-dvh overflow-x-hidden bg-cream text-ink">
@@ -44,9 +46,16 @@ export function Layout() {
             <div className="truncate text-xs font-semibold text-navy sm:text-sm">{settings.hotel}</div>
           </div>
           <div className="hidden shrink-0 text-center text-xs text-muted md:block">{today}</div>
-          <div className="min-w-0 max-w-[46%] text-left text-[11px] leading-4 sm:max-w-none sm:text-xs sm:leading-5">
-            <div className="truncate font-semibold text-navy">{settings.performer}</div>
+          <div className="min-w-0 max-w-[52%] text-end text-[11px] leading-4 sm:max-w-none sm:text-xs sm:leading-5">
+            <div className="truncate font-semibold text-navy">{performer}</div>
             <div className="hidden truncate text-muted min-[360px]:block">{settings.department}</div>
+            <button
+              type="button"
+              onClick={switchUser}
+              className="mt-0.5 text-[10px] font-semibold text-gold hover:underline sm:text-[11px]"
+            >
+              {t('layout.switchUser')}
+            </button>
           </div>
         </div>
       </header>
@@ -55,7 +64,7 @@ export function Layout() {
         <aside className="no-print hidden w-60 shrink-0 bg-navy-2 text-paper lg:flex lg:flex-col">
           <div className="border-b border-white/10 px-5 py-5">
             <div className="text-[11px] font-semibold tracking-[0.28em] text-gold uppercase">Holikar</div>
-            <div className="mt-1 text-sm font-medium text-paper/80">ניהול אחזקה</div>
+            <div className="mt-1 text-sm font-medium text-paper/80">{t('layout.maintenance')}</div>
           </div>
           <nav className="flex-1 space-y-1 p-3">
             {nav.map((item) => (
@@ -77,10 +86,17 @@ export function Layout() {
               </NavLink>
             ))}
           </nav>
+          <button
+            type="button"
+            onClick={switchUser}
+            className="mx-3 mb-4 rounded-lg px-3 py-2 text-start text-xs font-semibold text-paper/70 hover:bg-white/5 hover:text-paper"
+          >
+            {t('layout.switchUser')}
+          </button>
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col">
-          <main className="mx-auto w-full max-w-7xl flex-1 px-3 py-4 pb-28 sm:px-4 sm:py-5 lg:px-6 lg:py-7 lg:pb-8 xl:max-w-[1440px]">
+          <main className="holikar-main mx-auto w-full max-w-7xl flex-1 px-3 py-4 pb-28 sm:px-4 sm:py-5 lg:px-6 lg:py-7 lg:pb-8 xl:max-w-[1440px]">
             <Outlet />
           </main>
           <footer className="no-print hidden border-t border-line px-6 py-4 text-center text-[11px] text-muted lg:block" dir="ltr">

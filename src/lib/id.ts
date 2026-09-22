@@ -8,6 +8,9 @@
  * publication or commercial use is prohibited.
  */
 
+import { dateLocale } from '../i18n'
+import type { Locale } from '../i18n/types'
+
 export function uid(): string {
   return crypto.randomUUID()
 }
@@ -16,8 +19,8 @@ export function cellKey(room: string, columnId: string): string {
   return `${room}::${columnId}`
 }
 
-export function formatDateTime(ts: number): string {
-  return new Date(ts).toLocaleString('he-IL', {
+export function formatDateTime(ts: number, locale: Locale = 'he'): string {
+  return new Date(ts).toLocaleString(dateLocale(locale), {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
@@ -26,8 +29,8 @@ export function formatDateTime(ts: number): string {
   })
 }
 
-export function formatDate(ts: number): string {
-  return new Date(ts).toLocaleDateString('he-IL', {
+export function formatDate(ts: number, locale: Locale = 'he'): string {
+  return new Date(ts).toLocaleDateString(dateLocale(locale), {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',

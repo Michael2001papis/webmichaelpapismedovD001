@@ -10,6 +10,7 @@
 
 import { useMemo, useState } from 'react'
 import { HOTEL_RANGES, floorRooms, uniqueRooms } from '../lib/rooms'
+import { useSession } from '../lib/sessionContext'
 
 export function RoomPicker({
   hotelRooms,
@@ -20,6 +21,7 @@ export function RoomPicker({
   value: string[]
   onChange: (rooms: string[]) => void
 }) {
+  const { t } = useSession()
   const [from, setFrom] = useState('201')
   const [to, setTo] = useState('220')
   const [manual, setManual] = useState('')
@@ -46,7 +48,7 @@ export function RoomPicker({
           className="min-h-11 rounded-full bg-navy px-3 py-2 text-xs font-semibold text-paper"
           onClick={() => onChange(hotelRooms)}
         >
-          כל חדרי המלון
+          {t('picker.allRooms')}
         </button>
         {HOTEL_RANGES.map((range) => (
           <button
@@ -55,7 +57,7 @@ export function RoomPicker({
             className="rounded-full bg-cream px-3 py-2 text-xs font-semibold text-navy min-h-11"
             onClick={() => add(floorRooms(range.floor))}
           >
-            קומה {range.floor}
+            {t('picker.floor', { n: range.floor })}
           </button>
         ))}
         <button
@@ -63,13 +65,13 @@ export function RoomPicker({
           className="min-h-11 rounded-full bg-white px-3 py-2 text-xs font-bold text-muted"
           onClick={() => onChange([])}
         >
-          נקה
+          {t('picker.clear')}
         </button>
       </div>
 
       <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-end">
         <label className="text-xs font-semibold text-muted">
-          מ-
+          {t('picker.from')}
           <input
             value={from}
             onChange={(e) => setFrom(e.target.value)}
@@ -78,7 +80,7 @@ export function RoomPicker({
           />
         </label>
         <label className="text-xs font-semibold text-muted">
-          עד
+          {t('picker.to')}
           <input
             value={to}
             onChange={(e) => setTo(e.target.value)}
@@ -91,7 +93,7 @@ export function RoomPicker({
           className="btn-primary col-span-2 w-full px-4 text-sm sm:col-auto sm:w-auto"
           onClick={() => add(rangeRooms(from, to))}
         >
-          הוסף טווח
+          {t('picker.addRange')}
         </button>
       </div>
 
@@ -105,7 +107,7 @@ export function RoomPicker({
               applyManual()
             }
           }}
-          placeholder="חדרים: 201 217 241"
+          placeholder={t('picker.roomsPlaceholder')}
           className="field min-w-0 flex-1"
         />
         <button
@@ -113,11 +115,11 @@ export function RoomPicker({
           className="btn-primary shrink-0 px-3 text-sm sm:px-4"
           onClick={applyManual}
         >
-          הוסף
+          {t('picker.add')}
         </button>
       </div>
 
-      <div className="text-xs font-semibold text-muted">{selected.length} חדרים נבחרו</div>
+      <div className="text-xs font-semibold text-muted">{t('picker.selected', { n: selected.length })}</div>
       <div className="flex max-h-32 flex-wrap gap-1.5 overflow-auto">
         {selected.map((room) => (
           <button
@@ -125,7 +127,7 @@ export function RoomPicker({
             type="button"
             className="min-h-11 rounded-lg bg-cream px-3 py-2 text-xs font-bold text-navy"
             onClick={() => onChange(selected.filter((item) => item !== room))}
-            title="הסר חדר"
+            title={t('picker.remove')}
           >
             {room} ×
           </button>

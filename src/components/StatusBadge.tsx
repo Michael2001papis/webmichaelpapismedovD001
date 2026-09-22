@@ -9,7 +9,9 @@
  */
 
 import type { StatusDefinition } from '../types'
+import { statusLabel } from '../i18n'
 import { cn } from '../lib/id'
+import { useSession } from '../lib/sessionContext'
 
 export function StatusBadge({
   status,
@@ -18,6 +20,8 @@ export function StatusBadge({
   status: StatusDefinition
   className?: string
 }) {
+  const { locale } = useSession()
+  const label = statusLabel(locale, status)
   return (
     <span
       className={cn(
@@ -27,7 +31,7 @@ export function StatusBadge({
       style={{ background: status.bg, color: status.color }}
     >
       {status.shortcut ? <span>{status.shortcut}</span> : null}
-      {status.name}
+      {label}
     </span>
   )
 }
@@ -43,6 +47,7 @@ export function StatusPicker({
   onChange: (id: string) => void
   compact?: boolean
 }) {
+  const { locale } = useSession()
   const quick = statuses.filter((status) => status.shortcut)
   const rest = statuses.filter((status) => !status.shortcut)
   return (
@@ -60,7 +65,7 @@ export function StatusPicker({
             style={{ background: status.bg, color: status.color }}
           >
             <div className="text-base leading-none sm:text-lg">{status.shortcut}</div>
-            <span className="mt-1 block leading-tight">{status.name}</span>
+            <span className="mt-1 block leading-tight">{statusLabel(locale, status)}</span>
           </button>
         ))}
       </div>
@@ -77,7 +82,7 @@ export function StatusPicker({
               )}
               style={{ background: status.bg, color: status.color }}
             >
-              {status.name}
+              {statusLabel(locale, status)}
             </button>
           ))}
         </div>

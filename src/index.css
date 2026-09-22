@@ -211,3 +211,111 @@ button:disabled,
     min-height: 40px;
   }
 }
+
+html[lang='ru'],
+html[lang='en'] {
+  --font-sans: "Noto Sans", "Segoe UI", tahoma, sans-serif;
+}
+
+html[data-density='fast'] {
+  font-size: 15px;
+}
+
+html[data-density='fast'] .holikar-main {
+  padding-top: 0.7rem !important;
+}
+
+html[data-density='regular'] .holikar-main {
+  padding-top: 1.35rem !important;
+}
+
+@media (max-width: 1023px) {
+  html[data-density='fast'] .holikar-main {
+    padding-bottom: 5.2rem !important;
+  }
+
+  html[data-density='regular'] .holikar-main {
+    padding-bottom: 7.2rem !important;
+  }
+}
+
+html[data-density='fast'] .card {
+  border-radius: 10px;
+}
+
+html[data-density='fast'] .btn-primary,
+html[data-density='fast'] .btn-secondary,
+html[data-density='fast'] .btn-danger,
+html[data-density='fast'] .btn-ghost {
+  min-height: 38px;
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  gap: 0.3rem;
+}
+
+html[data-density='fast'] .field {
+  padding: 0.45rem 0.7rem;
+  font-size: 0.9375rem;
+  border-radius: 8px;
+}
+
+html[data-density='fast'] .space-y-5 > :not([hidden]) ~ :not([hidden]) {
+  margin-top: 0.75rem;
+}
+
+html[data-density='fast'] .space-y-4 > :not([hidden]) ~ :not([hidden]) {
+  margin-top: 0.6rem;
+}
+
+html[data-density='fast'] .space-y-3 > :not([hidden]) ~ :not([hidden]) {
+  margin-top: 0.45rem;
+}
+
+html[data-density='fast'] .min-h-11 {
+  min-height: 2.25rem;
+}
+
+html[data-density='fast'] .min-h-12 {
+  min-height: 2.5rem;
+}
+
+html[data-density='fast'] .min-h-14 {
+  min-height: 2.75rem;
+}
+
+html[data-density='regular'] {
+  font-size: 16.5px;
+}
+
+html[data-density='regular'] .btn-primary,
+html[data-density='regular'] .btn-secondary,
+html[data-density='regular'] .btn-danger,
+html[data-density='regular'] .btn-ghost {
+  min-height: 48px;
+  padding: 0.75rem 1.2rem;
+}
+
+html[data-density='regular'] .field {
+  padding: 0.85rem 1rem;
+  font-size: 1.05rem;
+}
+
+html[data-density='regular'] .min-h-11 {
+  min-height: 3rem;
+}
+
+html[data-density='regular'] .min-h-12 {
+  min-height: 3.15rem;
+}
+
+html[data-density='regular'] .min-h-14 {
+  min-height: 3.5rem;
+}
+
+html[data-density='regular'] .space-y-5 > :not([hidden]) ~ :not([hidden]) {
+  margin-top: 1.4rem;
+}
+
+html[data-density='regular'] .space-y-4 > :not([hidden]) ~ :not([hidden]) {
+  margin-top: 1.15rem;
+}

@@ -13,6 +13,8 @@ import type { Inspection, StatusDefinition } from '../types'
 import { setCell } from '../lib/db'
 import { cn } from '../lib/id'
 import { cellOf, emptyStatusId } from '../lib/stats'
+import { statusLabel } from '../i18n'
+import { useSession } from '../lib/sessionContext'
 import { CellNote } from './CellNote'
 import { StatusPicker } from './StatusBadge'
 
@@ -23,6 +25,7 @@ export function InspectionTable({
   inspection: Inspection
   statuses: StatusDefinition[]
 }) {
+  const { t, locale } = useSession()
   const missing = emptyStatusId(statuses)
   const columns = useMemo(
     () => [...inspection.columns].sort((a, b) => a.order - b.order),
@@ -38,10 +41,10 @@ export function InspectionTable({
       <div className="border-t border-line p-3 sm:p-4">
         <div className="mb-3 flex min-w-0 items-center justify-between gap-3">
           <div className="min-w-0 font-semibold break-words text-navy">
-            חדר {active.room} · {activeColumn.name}
+            {t('table.roomCheck', { room: active.room, check: activeColumn.name })}
           </div>
           <button type="button" className="btn-ghost min-h-11 shrink-0 px-3 text-sm" onClick={() => setActive(null)}>
-            סגור
+            {t('table.close')}
           </button>
         </div>
         <StatusPicker
@@ -57,7 +60,7 @@ export function InspectionTable({
           columnId={active.columnId}
           statusId={activeCell.statusId}
           note={activeCell.note}
-          placeholder="הערה, למשל: המים נשארים באזור הכניסה ולא מתנקזים בצורה תקינה."
+          placeholder={t('table.notePlaceholder')}
         />
       </div>
     )
@@ -80,7 +83,7 @@ export function InspectionTable({
                     type="button"
                     onClick={() => setActive({ room, columnId: column.id })}
                     className={cn(
-                      'flex min-h-12 w-full min-w-0 items-center justify-between gap-2 rounded-xl px-3 py-2 text-right',
+                      'flex min-h-12 w-full min-w-0 items-center justify-between gap-2 rounded-xl px-3 py-2 text-start',
                       isActive ? 'ring-2 ring-navy/30' : '',
                     )}
                     style={{
@@ -89,7 +92,9 @@ export function InspectionTable({
                     }}
                   >
                     <span className="min-w-0 font-semibold break-words">{column.name}</span>
-                    <span className="shrink-0 text-xs font-semibold">{status?.name ?? 'מידע חסר'}</span>
+                    <span className="shrink-0 text-xs font-semibold">
+                      {status ? statusLabel(locale, status) : t('table.missing')}
+                    </span>
                   </button>
                 )
               })}
@@ -103,9 +108,9 @@ export function InspectionTable({
           <table className="min-w-full border-separate border-spacing-0 text-sm">
             <thead className="sticky top-0 z-10">
               <tr>
-                <th className="sticky right-0 bg-navy px-3 py-3 text-right font-semibold text-paper">חדר</th>
+                <th className="sticky start-0 bg-navy px-3 py-3 text-start font-semibold text-paper">{t('table.room')}</th>
                 {columns.map((column) => (
-                  <th key={column.id} className="whitespace-nowrap bg-navy px-3 py-3 text-right font-semibold text-paper">
+                  <th key={column.id} className="whitespace-nowrap bg-navy px-3 py-3 text-start font-semibold text-paper">
                     {column.name}
                   </th>
                 ))}
@@ -114,7 +119,7 @@ export function InspectionTable({
             <tbody>
               {inspection.rooms.map((room, index) => (
                 <tr key={room} className={index % 2 ? 'bg-cream/70' : 'bg-paper'}>
-                  <td className="sticky right-0 bg-inherit px-3 py-2.5 text-base font-bold text-navy">{room}</td>
+                  <td className="sticky start-0 bg-inherit px-3 py-2.5 text-base font-bold text-navy">{room}</td>
                   {columns.map((column) => {
                     const cell = cellOf(inspection, room, column.id, missing)
                     const status = statuses.find((item) => item.id === cell.statusId)
@@ -125,7 +130,7 @@ export function InspectionTable({
                           type="button"
                           onClick={() => setActive({ room, columnId: column.id })}
                           className={cn(
-                            'block min-h-11 w-full min-w-28 rounded-lg px-2 py-2 text-right text-xs font-semibold',
+                            'block min-h-11 w-full min-w-28 rounded-lg px-2 py-2 text-start text-xs font-semibold',
                             isActive ? 'ring-2 ring-navy/30' : '',
                           )}
                           style={{
@@ -133,7 +138,7 @@ export function InspectionTable({
                             color: status?.color ?? '#111',
                           }}
                         >
-                          <div>{status?.name ?? 'מידע חסר'}</div>
+                          <div>{status ? statusLabel(locale, status) : t('table.missing')}</div>
                           {cell.note ? <div className="mt-1 line-clamp-2 font-medium opacity-80">{cell.note}</div> : null}
                         </button>
                       </td>

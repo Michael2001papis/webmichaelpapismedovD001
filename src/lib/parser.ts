@@ -9,6 +9,8 @@
  */
 
 import type { ParseResult } from '../types'
+import { dateLocale, t } from '../i18n'
+import type { Locale } from '../i18n/types'
 import { floorRooms, uniqueRooms } from './rooms'
 
 const FLOOR_WORDS: Record<string, number> = {
@@ -37,6 +39,18 @@ const FLOOR_WORDS: Record<string, number> = {
   שישית: 6,
   שישי: 6,
   שש: 6,
+  first: 1,
+  second: 2,
+  third: 3,
+  fourth: 4,
+  fifth: 5,
+  sixth: 6,
+  первый: 1,
+  второй: 2,
+  третий: 3,
+  четвертый: 4,
+  пятый: 5,
+  шестой: 6,
 }
 
 const FILLERS = new Set([
@@ -53,6 +67,19 @@ const FILLERS = new Set([
   'עבור',
   'במלון',
   'של',
+  'rooms',
+  'room',
+  'floor',
+  'please',
+  'check',
+  'inspect',
+  'hotel',
+  'номера',
+  'номер',
+  'этаж',
+  'проверьте',
+  'проверить',
+  'отеля',
 ])
 
 function pushUnique(target: number[], value: number) {
@@ -68,7 +95,10 @@ function splitChecks(source: string): string[] {
     .map((item) =>
       item
         .split(/\s+/)
-        .filter((word) => word && !FILLERS.has(word))
+        .filter((word) => {
+          const key = word.toLowerCase()
+          return Boolean(word) && !FILLERS.has(word) && !FILLERS.has(key)
+        })
         .join(' ')
         .trim(),
     )
@@ -87,14 +117,17 @@ export function parseInspectionRequest(raw: string): ParseResult {
   let text = raw.replace(/\s+/g, ' ').trim()
   if (!text) return result
 
-  if (/כל\s*(החדרים|חדרי\s*המלון|המלון|הקומות)/.test(text)) {
+  if (/כל\s*(החדרים|חדרי\s*המלון|המלון|הקומות)/.test(text) || /all\s+(hotel\s+)?rooms/i.test(text) || /все\s+номер/i.test(text)) {
     result.allRooms = true
     text = text.replace(/כל\s*(החדרים|חדרי\s*המלון|המלון|הקומות)/g, ' ')
+    text = text.replace(/all\s+(hotel\s+)?rooms/gi, ' ')
+    text = text.replace(/все\s+номер[аы]?(?:\s+отеля)?/gi, ' ')
   }
 
-  const floorRe = /קומה\s*(ראשונה|ראשון|שנייה|שניה|שני|שלישית|שלישי|רביעית|רביעי|חמישית|חמישי|שישית|שישי|[1-6])/g
+  const floorRe =
+    /(?:קומה|этаж|floor)\s*(ראשונה|ראשון|שנייה|שניה|שני|שלישית|שלישי|רביעית|רביעי|חמישית|חמישי|שישית|שישי|first|second|third|fourth|fifth|sixth|первый|второй|третий|четвертый|пятый|шестой|[1-6])/gi
   text = text.replace(floorRe, (_full, word: string) => {
-    const floor = FLOOR_WORDS[word]
+    const floor = FLOOR_WORDS[word] ?? FLOOR_WORDS[word.toLowerCase()]
     if (floor) {
       pushUnique(result.floors, floor)
       result.rooms.push(...floorRooms(floor))
@@ -102,7 +135,7 @@ export function parseInspectionRequest(raw: string): ParseResult {
     return ' '
   })
 
-  const rangeRe = /(\d{3})\s*(?:-|–|—|עד)\s*(\d{3})/g
+  const rangeRe = /(\d{3})\s*(?:-|–|—|עד|to|до)\s*(\d{3})/g
   text = text.replace(rangeRe, (_full, a: string, b: string) => {
     const start = Number(a)
     const end = Number(b)
@@ -135,10 +168,10 @@ export function parseInspectionRequest(raw: string): ParseResult {
   return result
 }
 
-export function suggestInspectionName(checks: string[], now = Date.now()): string {
-  const date = new Date(now).toLocaleDateString('he-IL')
-  if (checks.length === 0) return `בדיקה ${date}`
-  if (checks.length === 1) return `בדיקת ${checks[0]} ${date}`
-  if (checks.length === 2) return `בדיקת ${checks[0]} ו${checks[1]} ${date}`
-  return `בדיקת ${checks[0]} ועוד ${checks.length - 1} ${date}`
+export function suggestInspectionName(checks: string[], now = Date.now(), locale: Locale = 'he'): string {
+  const date = new Date(now).toLocaleDateString(dateLocale(locale))
+  if (checks.length === 0) return t(locale, 'inspection.defaultName', { date })
+  if (checks.length === 1) return t(locale, 'inspection.nameOne', { a: checks[0]!, date })
+  if (checks.length === 2) return t(locale, 'inspection.nameTwo', { a: checks[0]!, b: checks[1]!, date })
+  return t(locale, 'inspection.nameMore', { a: checks[0]!, n: checks.length - 1, date })
 }

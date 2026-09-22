@@ -9,12 +9,11 @@
  */
 
 import { FileDown, FileSpreadsheet, Plus, Trash2 } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { InspectionTable } from '../components/InspectionTable'
 import { MobileRoomWork } from '../components/MobileRoomWork'
-import { ReportDocument } from '../components/ReportDocument'
 import { RoomPicker } from '../components/RoomPicker'
 import {
   addColumn,
@@ -30,9 +29,12 @@ import {
 } from '../lib/db'
 import { formatDateTime } from '../lib/id'
 import { resolveHotelRooms } from '../lib/rooms'
-import { cellOf, computeInspectionStats, emptyStatusId, workflowLabel } from '../lib/stats'
+import { useSession } from '../lib/sessionContext'
+import { cellOf, computeInspectionStats, emptyStatusId } from '../lib/stats'
+import { workflowLabel } from '../i18n'
 
 export function InspectionPage() {
+  const { t, locale } = useSession()
   const { id = '' } = useParams()
   const navigate = useNavigate()
   const inspection = useLiveQuery(() => db.inspections.get(id), [id])
@@ -47,7 +49,6 @@ export function InspectionPage() {
   const [templateOpen, setTemplateOpen] = useState(false)
   const [templateName, setTemplateName] = useState('')
   const [name, setName] = useState('')
-  const reportRef = useRef<HTMLDivElement>(null)
   const hotelRooms = resolveHotelRooms(settings.extraRooms, settings.hiddenRooms)
 
   useEffect(() => {
@@ -81,14 +82,14 @@ export function InspectionPage() {
   }, [inspection, statuses])
 
   if (inspection === undefined) {
-    return <div className="card p-6 text-sm text-muted">טוען בדיקה...</div>
+    return <div className="card p-6 text-sm text-muted">{t('inspection.loading')}</div>
   }
   if (!inspection) {
     return (
       <div className="card p-6">
-        הבדיקה לא נמצאה.{' '}
+        {t('inspection.missing')}{' '}
         <Link to="/" className="font-semibold text-navy">
-          חזרה לבית
+          {t('inspection.backHome')}
         </Link>
       </div>
     )
@@ -101,11 +102,11 @@ export function InspectionPage() {
   const reportName = name || inspection.name
 
   async function downloadPdf() {
-    if (!reportRef.current) return
+    if (!inspection) return
     setExporting(true)
     try {
-      const { exportElementToPdf } = await import('../lib/exportPdf')
-      await exportElementToPdf(reportRef.current, reportName)
+      const { exportInspectionPdf } = await import('../lib/exportPdf')
+      await exportInspectionPdf(inspection, statuses, reportName, locale)
     } finally {
       setExporting(false)
     }
@@ -114,7 +115,7 @@ export function InspectionPage() {
   async function downloadExcel() {
     if (!inspection) return
     const { exportInspectionExcel } = await import('../lib/exportExcel')
-    exportInspectionExcel(inspection, statuses)
+    exportInspectionExcel(inspection, statuses, locale)
   }
 
   return (
@@ -126,15 +127,15 @@ export function InspectionPage() {
           className="w-full min-w-0 bg-transparent text-xl font-bold text-navy outline-none sm:text-2xl"
         />
         <div className="mt-1 text-xs leading-5 text-muted">
-          {formatDateTime(inspection.createdAt)} · {inspection.performer} · {inspection.hotel} ·{' '}
-          {workflowLabel[inspection.workflowStatus]}
+          {formatDateTime(inspection.createdAt, locale)} · {inspection.performer} · {inspection.hotel} ·{' '}
+          {workflowLabel(locale, inspection.workflowStatus)}
         </div>
         {stats && (
           <div className="mt-4 grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
-            <Mini label="חדרים" value={`${stats.checkedRooms}/${stats.totalRooms}`} />
-            <Mini label="תקינים" value={String(stats.byStatus.ok ?? 0)} />
-            <Mini label="לא תקינים" value={String(stats.byStatus.bad ?? 0)} tone="bad" />
-            <Mini label="חסר מידע" value={String(stats.byStatus.missing ?? stats.byStatus[missing] ?? 0)} />
+            <Mini label={t('inspection.rooms')} value={`${stats.checkedRooms}/${stats.totalRooms}`} />
+            <Mini label={t('inspection.ok')} value={String(stats.byStatus.ok ?? 0)} />
+            <Mini label={t('inspection.bad')} value={String(stats.byStatus.bad ?? 0)} tone="bad" />
+            <Mini label={t('inspection.missingInfo')} value={String(stats.byStatus.missing ?? stats.byStatus[missing] ?? 0)} />
           </div>
         )}
         <div className="mt-4 grid grid-cols-1 gap-2 min-[380px]:grid-cols-2 sm:flex sm:flex-wrap">
@@ -142,7 +143,7 @@ export function InspectionPage() {
             <FileSpreadsheet size={14} strokeWidth={1.7} /> Excel
           </button>
           <button type="button" onClick={() => void downloadPdf()} className="btn-primary w-full px-3 text-sm sm:w-auto">
-            <FileDown size={14} strokeWidth={1.7} /> {exporting ? 'מכין PDF...' : 'PDF'}
+            <FileDown size={14} strokeWidth={1.7} /> {exporting ? t('inspection.pdfBusy') : 'PDF'}
           </button>
           <button
             type="button"
@@ -152,30 +153,30 @@ export function InspectionPage() {
             }}
             className="btn-secondary w-full px-3 text-sm sm:w-auto"
           >
-            שמור כתבנית
+            {t('inspection.saveTemplate')}
           </button>
           {okId && (
             <button
               type="button"
               onClick={() => {
-                if (!confirm('לסמן את כל המשבצות בבדיקה כתקינות?')) return
+                if (!confirm(t('inspection.markAllOkConfirm'))) return
                 void markAllRoomsStatus(inspection.id, okId)
               }}
               className="btn-ghost w-full px-3 text-sm sm:w-auto"
             >
-              סמן הכל תקין
+              {t('inspection.markAllOk')}
             </button>
           )}
           <button
             type="button"
             onClick={async () => {
-              if (!confirm('למחוק את הבדיקה מהארכיון?')) return
+              if (!confirm(t('inspection.deleteConfirm'))) return
               await db.inspections.delete(inspection.id)
               navigate('/archive')
             }}
             className="btn-danger w-full px-3 text-sm sm:w-auto"
           >
-            <Trash2 size={14} strokeWidth={1.7} /> מחק
+            <Trash2 size={14} strokeWidth={1.7} /> {t('inspection.delete')}
           </button>
         </div>
         {templateOpen && (
@@ -184,7 +185,7 @@ export function InspectionPage() {
               value={templateName}
               onChange={(e) => setTemplateName(e.target.value)}
               className="field min-w-0 flex-1 text-sm"
-              placeholder="שם התבנית"
+              placeholder={t('inspection.templateName')}
             />
             <div className="flex gap-2">
               <button
@@ -196,10 +197,10 @@ export function InspectionPage() {
                   navigate('/templates')
                 }}
               >
-                שמור
+                {t('inspection.save')}
               </button>
               <button type="button" className="btn-ghost min-h-11 flex-1 px-3 text-sm sm:flex-none" onClick={() => setTemplateOpen(false)}>
-                ביטול
+                {t('inspection.cancel')}
               </button>
             </div>
           </div>
@@ -213,14 +214,14 @@ export function InspectionPage() {
             className={`min-h-11 flex-1 rounded-lg px-2 py-2.5 text-sm font-semibold ${mode === 'rooms' ? 'bg-navy text-paper' : 'text-navy'}`}
             onClick={() => setMode('rooms')}
           >
-            לפי חדר
+            {t('inspection.byRoom')}
           </button>
           <button
             type="button"
             className={`min-h-11 flex-1 rounded-lg px-2 py-2.5 text-sm font-semibold ${mode === 'table' ? 'bg-navy text-paper' : 'text-navy'}`}
             onClick={() => setMode('table')}
           >
-            טבלה
+            {t('inspection.table')}
           </button>
         </div>
         <button
@@ -228,12 +229,12 @@ export function InspectionPage() {
           onClick={() => setOnlyIssues((value) => !value)}
           className={`min-h-11 rounded-[12px] px-4 py-2.5 text-sm font-semibold sm:shrink-0 ${onlyIssues ? 'bg-[#f6e8e8] text-bad' : 'card'}`}
         >
-          רק ליקויים ({issueRooms.length})
+          {t('inspection.issuesOnly', { n: issueRooms.length })}
         </button>
       </div>
 
       {onlyIssues && issueRooms.length === 0 ? (
-        <div className="card p-4 text-sm text-muted">אין ליקויים בבדיקה זו.</div>
+        <div className="card p-4 text-sm text-muted">{t('inspection.noIssues')}</div>
       ) : mode === 'rooms' ? (
         <MobileRoomWork inspection={viewInspection} statuses={statuses} />
       ) : (
@@ -242,7 +243,7 @@ export function InspectionPage() {
 
       <section className="card p-4">
         <button type="button" className="font-semibold text-navy" onClick={() => setShowColumns((v) => !v)}>
-          עמודות בדיקה ({columns.length}) {showColumns ? '▾' : '▸'}
+          {t('inspection.columns', { n: columns.length })} {showColumns ? '▾' : '▸'}
         </button>
         {showColumns && (
           <>
@@ -256,13 +257,13 @@ export function InspectionPage() {
                   />
                   <div className="flex flex-wrap gap-2">
                     <button type="button" className="btn-ghost min-h-11 flex-1 px-3 text-xs sm:flex-none" onClick={() => void moveColumn(inspection.id, column.id, -1)}>
-                      למעלה
+                      {t('inspection.up')}
                     </button>
                     <button type="button" className="btn-ghost min-h-11 flex-1 px-3 text-xs sm:flex-none" onClick={() => void moveColumn(inspection.id, column.id, 1)}>
-                      למטה
+                      {t('inspection.down')}
                     </button>
                     <button type="button" className="btn-danger min-h-11 flex-1 px-3 text-xs sm:flex-none" onClick={() => void deleteColumn(inspection.id, column.id)}>
-                      מחק
+                      {t('inspection.delete')}
                     </button>
                   </div>
                 </div>
@@ -272,7 +273,7 @@ export function InspectionPage() {
               <input
                 value={newCheck}
                 onChange={(e) => setNewCheck(e.target.value)}
-                placeholder="הוסף בדיקה חדשה"
+                placeholder={t('inspection.addCheck')}
                 className="field min-w-0 flex-1 text-sm"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && newCheck.trim()) {
@@ -290,7 +291,7 @@ export function InspectionPage() {
                   setNewCheck('')
                 }}
               >
-                <Plus size={14} strokeWidth={1.7} /> הוסף
+                <Plus size={14} strokeWidth={1.7} /> {t('inspection.add')}
               </button>
             </div>
           </>
@@ -299,7 +300,7 @@ export function InspectionPage() {
 
       <section className="card p-4">
         <button type="button" className="font-semibold text-navy" onClick={() => setShowRooms((v) => !v)}>
-          חדרים ({inspection.rooms.length}) {showRooms ? '▾' : '▸'}
+          {t('inspection.roomsCount', { n: inspection.rooms.length })} {showRooms ? '▾' : '▸'}
         </button>
         {showRooms && (
           <div className="mt-3 space-y-3">
@@ -312,11 +313,6 @@ export function InspectionPage() {
         )}
       </section>
 
-      <div aria-hidden="true" className="pointer-events-none fixed -left-[10000px] top-0 -z-10">
-        <div ref={reportRef}>
-          <ReportDocument inspection={inspection} statuses={statuses} />
-        </div>
-      </div>
     </div>
   )
 }

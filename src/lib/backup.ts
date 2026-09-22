@@ -52,7 +52,7 @@ export async function downloadBackup() {
 export async function restoreBackup(file: File) {
   const parsed = JSON.parse(await file.text()) as Partial<HolikarBackup>
   if (!parsed || parsed.version !== 1 || !Array.isArray(parsed.inspections)) {
-    throw new Error('קובץ גיבוי לא תקין')
+    throw new Error('invalid_backup')
   }
   await db.transaction('rw', db.inspections, db.templates, db.statuses, db.settings, async () => {
     await db.inspections.clear()

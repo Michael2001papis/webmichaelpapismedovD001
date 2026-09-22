@@ -15,9 +15,12 @@ import { tint } from '../lib/color'
 import { db, DEFAULT_SETTINGS, DEFAULT_STATUSES } from '../lib/db'
 import { uid } from '../lib/id'
 import { defaultHotelRooms, floorOfRoom, HOTEL_RANGES, uniqueRooms } from '../lib/rooms'
+import { useSession } from '../lib/sessionContext'
+import { statusLabel } from '../i18n'
 import type { StatusDefinition } from '../types'
 
 export function SettingsPage() {
+  const { t, locale, session } = useSession()
   const settings = useLiveQuery(() => db.settings.get('main')) ?? DEFAULT_SETTINGS
   const statuses = useLiveQuery(() => db.statuses.orderBy('order').toArray()) ?? []
   const [roomDraft, setRoomDraft] = useState('')
@@ -26,6 +29,7 @@ export function SettingsPage() {
   const hotelRooms = uniqueRooms([...defaultHotelRooms(), ...settings.extraRooms]).filter(
     (room) => !settings.hiddenRooms.includes(room),
   )
+  const performer = session?.name ?? settings.performer
 
   async function saveSettings(patch: Partial<typeof settings>) {
     await db.settings.put({ ...settings, ...patch })
@@ -34,28 +38,26 @@ export function SettingsPage() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-xl font-bold text-navy sm:text-2xl md:text-3xl">הגדרות</h1>
-        <p className="mt-1 text-sm text-muted">פרטי דוח, סטטוסים, חדרי מלון וגיבוי מקומי.</p>
+        <h1 className="text-xl font-bold text-navy sm:text-2xl md:text-3xl">{t('settings.title')}</h1>
+        <p className="mt-1 text-sm text-muted">{t('settings.lead')}</p>
       </div>
 
       <section className="card space-y-3 p-4 sm:p-5">
-        <h2 className="font-semibold text-navy">גיבוי ושחזור</h2>
-        <p className="text-sm text-muted">
-          הנתונים נשמרים בדפדפן הזה בלבד. כדאי להוריד גיבוי אחרי יום עבודה, במיוחד לפני ניקוי היסטוריה.
-        </p>
+        <h2 className="font-semibold text-navy">{t('settings.backup')}</h2>
+        <p className="text-sm text-muted">{t('settings.backupLead')}</p>
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
             className="btn-primary px-4 text-sm"
             onClick={async () => {
               await downloadBackup()
-              setBackupMsg('הגיבוי ירד לקובץ JSON במחשב.')
+              setBackupMsg(t('settings.backupDownloaded'))
             }}
           >
-            הורד גיבוי
+            {t('settings.downloadBackup')}
           </button>
           <button type="button" className="btn-secondary px-4 text-sm" onClick={() => fileRef.current?.click()}>
-            שחזר מגיבוי
+            {t('settings.restoreBackup')}
           </button>
           <input
             ref={fileRef}
@@ -66,12 +68,12 @@ export function SettingsPage() {
               const file = e.target.files?.[0]
               e.target.value = ''
               if (!file) return
-              if (!confirm('שחזור יחליף את כל הבדיקות, התבניות וההגדרות הקיימות. להמשיך?')) return
+              if (!confirm(t('settings.restoreConfirm'))) return
               try {
                 await restoreBackup(file)
-                setBackupMsg('הגיבוי שוחזר בהצלחה.')
+                setBackupMsg(t('settings.restoreOk'))
               } catch {
-                setBackupMsg('לא הצלחתי לקרוא את קובץ הגיבוי.')
+                setBackupMsg(t('settings.restoreFail'))
               }
             }}
           />
@@ -80,19 +82,27 @@ export function SettingsPage() {
       </section>
 
       <section className="card space-y-3 p-4 sm:p-5">
-        <h2 className="font-semibold text-navy">פרטי דוח</h2>
-        <Field label="שם מבצע" value={settings.performer} onChange={(performer) => void saveSettings({ performer })} />
-        <Field label="מלון" value={settings.hotel} onChange={(hotel) => void saveSettings({ hotel })} />
-        <Field label="מחלקה" value={settings.department} onChange={(department) => void saveSettings({ department })} />
+        <h2 className="font-semibold text-navy">{t('settings.reportDetails')}</h2>
+        <label className="block text-sm font-semibold text-navy">
+          {t('settings.performer')}
+          <input value={performer} readOnly className="field mt-1 bg-cream font-medium" />
+          <span className="mt-1 block text-xs font-medium text-muted">{t('settings.performerHint')}</span>
+        </label>
+        <Field label={t('settings.hotel')} value={settings.hotel} onChange={(hotel) => void saveSettings({ hotel })} />
+        <Field
+          label={t('settings.department')}
+          value={settings.department}
+          onChange={(department) => void saveSettings({ department })}
+        />
       </section>
 
       <section className="card space-y-3 p-4 sm:p-5">
-        <h2 className="font-semibold text-navy">סטטוסים</h2>
-        <p className="text-sm text-muted">אפשר להוסיף, לשנות שם ולמחוק סטטוסים. הסטטוס עם סימון ברירת מחדל יופיע במשבצות חדשות.</p>
+        <h2 className="font-semibold text-navy">{t('settings.statuses')}</h2>
+        <p className="text-sm text-muted">{t('settings.statusesLead')}</p>
         {statuses.map((status) => (
           <div key={status.id} className="flex min-w-0 flex-col gap-2 rounded-xl bg-cream p-3 sm:flex-row sm:flex-wrap sm:items-center">
             <input
-              value={status.name}
+              value={statusLabel(locale, status)}
               onChange={(e) => void db.statuses.update(status.id, { name: e.target.value })}
               className="field min-w-0 flex-1 text-sm font-semibold"
             />
@@ -120,18 +130,18 @@ export function SettingsPage() {
                   }
                 }}
               />{' '}
-              ברירת מחדל
+              {t('settings.default')}
             </label>
             <button
               type="button"
               className="btn-danger min-h-11 px-3 text-xs"
               onClick={async () => {
                 if (statuses.length <= 1) return
-                if (!confirm(`למחוק את הסטטוס ${status.name}?`)) return
+                if (!confirm(t('settings.deleteStatus', { name: statusLabel(locale, status) }))) return
                 await db.statuses.delete(status.id)
               }}
             >
-              מחק
+              {t('settings.delete')}
             </button>
             </div>
           </div>
@@ -142,7 +152,7 @@ export function SettingsPage() {
           onClick={async () => {
             const status: StatusDefinition = {
               id: uid(),
-              name: 'סטטוס חדש',
+              name: t('settings.newStatus'),
               color: '#24364A',
               bg: '#E8EDF1',
               order: statuses.length,
@@ -150,29 +160,29 @@ export function SettingsPage() {
             await db.statuses.add(status)
           }}
         >
-          הוסף סטטוס
+          {t('settings.addStatus')}
         </button>
         <button
           type="button"
           className="btn-ghost px-4 text-sm"
           onClick={async () => {
-            if (!confirm('לשחזר את הסטטוסים המקוריים?')) return
+            if (!confirm(t('settings.restoreStatusesConfirm'))) return
             await db.statuses.clear()
             await db.statuses.bulkAdd(DEFAULT_STATUSES)
           }}
         >
-          שחזר סטטוסים מקוריים
+          {t('settings.restoreStatuses')}
         </button>
       </section>
 
       <section className="card space-y-3 p-4 sm:p-5">
-        <h2 className="font-semibold text-navy">חדרי מלון</h2>
-        <p className="text-sm text-muted">{hotelRooms.length} חדרים פעילים. לחצו על קומה כדי להסתיר חדר בודד.</p>
+        <h2 className="font-semibold text-navy">{t('settings.hotelRooms')}</h2>
+        <p className="text-sm text-muted">{t('settings.activeRooms', { n: hotelRooms.length })}</p>
         <div className="flex min-w-0 gap-2">
           <input
             value={roomDraft}
             onChange={(e) => setRoomDraft(e.target.value)}
-            placeholder="הוסף חדר, למשל 250"
+            placeholder={t('settings.addRoomPlaceholder')}
             className="field min-w-0 flex-1"
           />
           <button
@@ -185,7 +195,7 @@ export function SettingsPage() {
               setRoomDraft('')
             }}
           >
-            הוסף
+            {t('settings.add')}
           </button>
         </div>
         <div className="space-y-2">
@@ -194,14 +204,14 @@ export function SettingsPage() {
             return (
               <details key={range.floor} className="rounded-xl bg-cream px-3 py-2">
                 <summary className="cursor-pointer text-sm font-semibold text-navy">
-                  קומה {range.floor} · {rooms.length} חדרים
+                  {t('settings.floorRooms', { floor: range.floor, n: rooms.length })}
                 </summary>
                 <div className="mt-2 flex flex-wrap gap-1">
                   {rooms.map((room) => (
                     <button
                       key={room}
                       type="button"
-                      title="הסתר חדר"
+                      title={t('settings.hideRoom')}
                       className="min-h-10 rounded-md bg-paper px-3 py-2 text-xs font-semibold"
                       onClick={() => void saveSettings({ hiddenRooms: uniqueRooms([...settings.hiddenRooms, room]) })}
                     >
@@ -217,7 +227,7 @@ export function SettingsPage() {
             return !floor || !HOTEL_RANGES.some((range) => range.floor === floor)
           }) && (
             <details className="rounded-xl bg-cream px-3 py-2">
-              <summary className="cursor-pointer text-sm font-semibold text-navy">חדרים נוספים</summary>
+              <summary className="cursor-pointer text-sm font-semibold text-navy">{t('settings.extraRooms')}</summary>
               <div className="mt-2 flex flex-wrap gap-1">
                 {hotelRooms
                   .filter((room) => {
@@ -244,7 +254,7 @@ export function SettingsPage() {
             className="text-xs font-semibold text-navy"
             onClick={() => void saveSettings({ hiddenRooms: [] })}
           >
-            שחזר חדרים מוסתרים ({settings.hiddenRooms.length})
+            {t('settings.restoreHidden', { n: settings.hiddenRooms.length })}
           </button>
         )}
       </section>

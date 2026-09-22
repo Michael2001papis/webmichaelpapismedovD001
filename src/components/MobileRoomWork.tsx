@@ -14,6 +14,7 @@ import type { Inspection, StatusDefinition } from '../types'
 import { markRoomStatus, setCell } from '../lib/db'
 import { cellOf, emptyStatusId } from '../lib/stats'
 import { groupRoomsByFloor } from '../lib/rooms'
+import { useSession } from '../lib/sessionContext'
 import { CellNote } from './CellNote'
 import { StatusBadge, StatusPicker } from './StatusBadge'
 
@@ -24,6 +25,7 @@ export function MobileRoomWork({
   inspection: Inspection
   statuses: StatusDefinition[]
 }) {
+  const { t, dir } = useSession()
   const missing = emptyStatusId(statuses)
   const okId = statuses.find((status) => status.id === 'ok')?.id ?? statuses[0]?.id
   const columns = useMemo(
@@ -32,6 +34,8 @@ export function MobileRoomWork({
   )
   const [query, setQuery] = useState('')
   const [room, setRoom] = useState(inspection.rooms[0] ?? '')
+  const PrevIcon = dir === 'rtl' ? ChevronRight : ChevronLeft
+  const NextIcon = dir === 'rtl' ? ChevronLeft : ChevronRight
 
   useEffect(() => {
     if (!inspection.rooms.includes(room)) setRoom(inspection.rooms[0] ?? '')
@@ -62,7 +66,7 @@ export function MobileRoomWork({
   }
 
   if (!inspection.rooms.length) {
-    return <div className="card p-4 text-sm text-muted">אין חדרים להצגה.</div>
+    return <div className="card p-4 text-sm text-muted">{t('work.noRooms')}</div>
   }
 
   return (
@@ -70,7 +74,7 @@ export function MobileRoomWork({
       <input
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="חפש מספר חדר"
+        placeholder={t('work.searchRoom')}
         className="field text-base"
         inputMode="numeric"
       />
@@ -80,7 +84,7 @@ export function MobileRoomWork({
           {grouped.map((group) => (
             <div key={String(group.floor)} className="shrink-0">
               <div className="mb-1 text-[11px] font-medium text-muted">
-                {group.floor ? `קומה ${group.floor}` : 'אחר'}
+                {group.floor ? t('work.floor', { n: group.floor }) : t('work.other')}
               </div>
               <div className="flex gap-1">
                 {group.rooms.map((item) => {
@@ -118,28 +122,28 @@ export function MobileRoomWork({
 
       <div className="card overflow-hidden p-3 sm:p-4">
         <div className="mb-4 grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2">
-          <button type="button" onClick={() => go(-1)} className="btn-ghost min-h-11 min-w-11 px-2 sm:px-3" aria-label="חדר קודם">
-            <ChevronRight size={18} strokeWidth={1.7} />
-            <span className="hidden sm:inline">הקודם</span>
+          <button type="button" onClick={() => go(-1)} className="btn-ghost min-h-11 min-w-11 px-2 sm:px-3" aria-label={t('work.prevAria')}>
+            <PrevIcon size={18} strokeWidth={1.7} />
+            <span className="hidden sm:inline">{t('work.prev')}</span>
           </button>
           <div className="min-w-0 text-center">
-            <div className="text-[11px] font-medium tracking-wide text-muted uppercase">חדר</div>
+            <div className="text-[11px] font-medium tracking-wide text-muted uppercase">{t('work.room')}</div>
             <div className="truncate text-3xl font-bold leading-none text-navy sm:text-4xl">{room}</div>
           </div>
-          <button type="button" onClick={() => go(1)} className="btn-ghost min-h-11 min-w-11 px-2 sm:px-3" aria-label="חדר הבא">
-            <span className="hidden sm:inline">הבא</span>
-            <ChevronLeft size={18} strokeWidth={1.7} />
+          <button type="button" onClick={() => go(1)} className="btn-ghost min-h-11 min-w-11 px-2 sm:px-3" aria-label={t('work.nextAria')}>
+            <span className="hidden sm:inline">{t('work.next')}</span>
+            <NextIcon size={18} strokeWidth={1.7} />
           </button>
         </div>
 
         <div className="mb-4 grid grid-cols-1 gap-2 min-[400px]:grid-cols-2">
           {okId && (
             <button type="button" onClick={() => void markRoomOk()} className="btn-primary min-h-12 py-3 text-sm">
-              הכל תקין והמשך
+              {t('work.allOkNext')}
             </button>
           )}
           <button type="button" onClick={nextIncomplete} className="btn-secondary min-h-12 py-3 text-sm">
-            דלג לחדר חסר
+            {t('work.skipMissing')}
           </button>
         </div>
 
@@ -170,7 +174,7 @@ export function MobileRoomWork({
                     columnId={column.id}
                     statusId={cell.statusId}
                     note={cell.note}
-                    placeholder="הערה לחדר זה"
+                    placeholder={t('work.notePlaceholder')}
                   />
                 )}
               </div>

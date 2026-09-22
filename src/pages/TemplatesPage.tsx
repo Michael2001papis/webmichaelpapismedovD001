@@ -17,8 +17,10 @@ import { createInspection, db, DEFAULT_SETTINGS } from '../lib/db'
 import { uid } from '../lib/id'
 import { suggestInspectionName } from '../lib/parser'
 import { resolveHotelRooms } from '../lib/rooms'
+import { useSession } from '../lib/sessionContext'
 
 export function TemplatesPage() {
+  const { t, locale, session } = useSession()
   const templates = useLiveQuery(() => db.templates.orderBy('createdAt').reverse().toArray()) ?? []
   const settings = useLiveQuery(() => db.settings.get('main')) ?? DEFAULT_SETTINGS
   const hotelRooms = resolveHotelRooms(settings.extraRooms, settings.hiddenRooms)
@@ -32,9 +34,10 @@ export function TemplatesPage() {
   async function start() {
     if (!active || rooms.length === 0) return
     const id = await createInspection({
-      name: suggestInspectionName(active.columns),
+      name: suggestInspectionName(active.columns, Date.now(), locale),
       rooms,
       checks: active.columns,
+      performer: session?.name,
     })
     navigate(`/inspection/${id}`)
   }
@@ -42,8 +45,8 @@ export function TemplatesPage() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-xl font-bold text-navy sm:text-2xl md:text-3xl">תבניות</h1>
-        <p className="mt-1 text-sm text-muted">פתחו תבנית, בחרו חדרים, והתחילו לעבוד מיד.</p>
+        <h1 className="text-xl font-bold text-navy sm:text-2xl md:text-3xl">{t('templates.title')}</h1>
+        <p className="mt-1 text-sm text-muted">{t('templates.lead')}</p>
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -69,16 +72,16 @@ export function TemplatesPage() {
       {active && (
         <section className="card p-4 sm:p-5">
           <div className="mb-3 flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <h2 className="min-w-0 text-lg font-semibold break-words text-navy">התחל מ{active.name}</h2>
+            <h2 className="min-w-0 text-lg font-semibold break-words text-navy">{t('templates.startFrom', { name: active.name })}</h2>
             <button
               type="button"
               className="btn-danger min-h-11 w-full px-3 text-xs sm:w-auto"
               onClick={() => {
-                if (!confirm(`למחוק את התבנית ${active.name}?`)) return
+                if (!confirm(t('templates.deleteConfirm', { name: active.name }))) return
                 void db.templates.delete(active.id)
               }}
             >
-              מחק תבנית
+              {t('templates.delete')}
             </button>
           </div>
           <RoomPicker hotelRooms={hotelRooms} value={rooms} onChange={setRooms} />
@@ -88,17 +91,17 @@ export function TemplatesPage() {
             disabled={rooms.length === 0}
             className="btn-primary mt-4 w-full py-3"
           >
-            צור טבלה מהתבנית
+            {t('templates.createFrom')}
           </button>
         </section>
       )}
 
       <section className="card p-4 sm:p-5">
-        <h2 className="mb-3 text-lg font-semibold text-navy">תבנית חדשה</h2>
+        <h2 className="mb-3 text-lg font-semibold text-navy">{t('templates.new')}</h2>
         <input
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
-          placeholder="שם התבנית, למשל בדיקת מזגנים"
+          placeholder={t('templates.namePlaceholder')}
           className="field mb-3"
         />
         <CheckEditor value={newCols} onChange={setNewCols} />
@@ -117,7 +120,7 @@ export function TemplatesPage() {
             setNewCols([])
           }}
         >
-          שמור תבנית
+          {t('templates.save')}
         </button>
       </section>
     </div>

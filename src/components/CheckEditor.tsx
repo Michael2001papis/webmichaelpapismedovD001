@@ -9,6 +9,7 @@
  */
 
 import { useState } from 'react'
+import { useSession } from '../lib/sessionContext'
 
 export function CheckEditor({
   value,
@@ -17,6 +18,7 @@ export function CheckEditor({
   value: string[]
   onChange: (checks: string[]) => void
 }) {
+  const { t } = useSession()
   const [draft, setDraft] = useState('')
 
   function add() {
@@ -38,7 +40,7 @@ export function CheckEditor({
               add()
             }
           }}
-          placeholder="הוסף בדיקה, למשל חלודה בידית"
+          placeholder={t('check.addPlaceholder')}
           className="field min-w-0 flex-1"
         />
         <button
@@ -46,8 +48,8 @@ export function CheckEditor({
           onClick={add}
           className="btn-primary shrink-0 px-3 text-sm sm:px-4"
         >
-          <span className="sm:hidden">הוסף</span>
-          <span className="hidden sm:inline">הוסף עמודה</span>
+          <span className="sm:hidden">{t('check.add')}</span>
+          <span className="hidden sm:inline">{t('check.addColumn')}</span>
         </button>
       </div>
       <div className="space-y-2">
@@ -68,7 +70,7 @@ export function CheckEditor({
                 className="btn-danger min-h-11 flex-1 px-3 text-xs sm:flex-none"
                 onClick={() => onChange(value.filter((_, i) => i !== index))}
               >
-                מחק
+                {t('check.delete')}
               </button>
               <button
                 type="button"
@@ -76,7 +78,7 @@ export function CheckEditor({
                 className="btn-ghost min-h-11 flex-1 px-3 text-xs sm:flex-none"
                 onClick={() => move(value, index, -1, onChange)}
               >
-                למעלה
+                {t('check.up')}
               </button>
               <button
                 type="button"
@@ -84,7 +86,7 @@ export function CheckEditor({
                 className="btn-ghost min-h-11 flex-1 px-3 text-xs sm:flex-none"
                 onClick={() => move(value, index, 1, onChange)}
               >
-                למטה
+                {t('check.down')}
               </button>
             </div>
           </div>

@@ -11,6 +11,7 @@
 import { AlertTriangle, CheckCircle2, ClipboardList, DoorOpen, Eye } from 'lucide-react'
 import type { Inspection, StatusDefinition } from '../types'
 import { computeInspectionStats } from '../lib/stats'
+import { useSession } from '../lib/sessionContext'
 import { StatusBadge } from './StatusBadge'
 
 export function Dashboard({
@@ -20,6 +21,7 @@ export function Dashboard({
   inspections: Inspection[]
   statuses: StatusDefinition[]
 }) {
+  const { t } = useSession()
   const latest = inspections[0]
   const stats = latest ? computeInspectionStats(latest, statuses) : null
 
@@ -38,22 +40,22 @@ export function Dashboard({
   return (
     <section className="space-y-3">
       <div className="grid grid-cols-1 gap-3 min-[400px]:grid-cols-2 xl:grid-cols-5">
-        <StatCard label="בדיקות פעילות" value={totals.active} icon={ClipboardList} />
-        <StatCard label="חדרים שנבדקו" value={totals.rooms} icon={DoorOpen} />
-        <StatCard label="ליקויים פתוחים" value={totals.byStatus.bad ?? 0} tone="bad" icon={AlertTriangle} />
-        <StatCard label="דורש מעקב" value={totals.byStatus.watch ?? 0} tone="watch" icon={Eye} />
-        <StatCard label="בדיקות שהושלמו" value={totals.done} icon={CheckCircle2} />
+        <StatCard label={t('dash.active')} value={totals.active} icon={ClipboardList} />
+        <StatCard label={t('dash.roomsChecked')} value={totals.rooms} icon={DoorOpen} />
+        <StatCard label={t('dash.openIssues')} value={totals.byStatus.bad ?? 0} tone="bad" icon={AlertTriangle} />
+        <StatCard label={t('dash.watch')} value={totals.byStatus.watch ?? 0} tone="watch" icon={Eye} />
+        <StatCard label={t('dash.done')} value={totals.done} icon={CheckCircle2} />
       </div>
 
       {latest && stats && (
         <div className="card p-4 sm:p-5">
           <div className="mb-4 flex min-w-0 flex-wrap items-end justify-between gap-2">
             <div className="min-w-0">
-              <div className="text-[11px] font-semibold tracking-wide text-muted uppercase">הבדיקה האחרונה</div>
+              <div className="text-[11px] font-semibold tracking-wide text-muted uppercase">{t('dash.last')}</div>
               <div className="mt-1 truncate text-base font-semibold text-navy sm:text-lg">{latest.name}</div>
             </div>
             <div className="text-sm text-muted">
-              {stats.checkedRooms}/{stats.totalRooms} חדרים הושלמו
+              {t('dash.roomsDone', { done: stats.checkedRooms, total: stats.totalRooms })}
             </div>
           </div>
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">

@@ -13,15 +13,15 @@ import { Link, useNavigate } from 'react-router-dom'
 import { createInspection } from '../lib/db'
 import { parseInspectionRequest, suggestInspectionName } from '../lib/parser'
 import { resolveHotelRooms } from '../lib/rooms'
+import { useSession } from '../lib/sessionContext'
 import type { AppSettings } from '../types'
 import { CheckEditor } from './CheckEditor'
 import { RoomPicker } from './RoomPicker'
 
-const EXAMPLE =
-  'לדוגמה: חדרים 201, 217, 241 ו-249 — בדיקת שיפוע מזגן, ניקוז ודלת כניסה.'
-
 export function Composer({ settings }: { settings: AppSettings }) {
+  const { t, locale, session } = useSession()
   const navigate = useNavigate()
+  const example = t('composer.example')
   const [text, setText] = useState('')
   const [name, setName] = useState('')
   const [rooms, setRooms] = useState<string[]>([])
@@ -40,14 +40,14 @@ export function Composer({ settings }: { settings: AppSettings }) {
     const result = parseInspectionRequest(text)
     setRooms(result.allRooms ? hotelRooms : result.rooms)
     setChecks(result.checks)
-    setName((current) => current || suggestInspectionName(result.checks))
-  }, [text, formDirty, hotelRooms])
+    setName((current) => current || suggestInspectionName(result.checks, Date.now(), locale))
+  }, [text, formDirty, hotelRooms, locale])
 
   function applyParse() {
     const result = parseInspectionRequest(text)
     setRooms(result.allRooms ? hotelRooms : result.rooms)
     setChecks(result.checks)
-    if (!name) setName(suggestInspectionName(result.checks))
+    if (!name) setName(suggestInspectionName(result.checks, Date.now(), locale))
     setFormDirty(false)
   }
 
@@ -56,9 +56,10 @@ export function Composer({ settings }: { settings: AppSettings }) {
     setBusy(true)
     try {
       const id = await createInspection({
-        name: name || suggestInspectionName(checks),
+        name: name || suggestInspectionName(checks, Date.now(), locale),
         rooms,
         checks,
+        performer: session?.name,
       })
       navigate(`/inspection/${id}`)
     } finally {
@@ -69,11 +70,9 @@ export function Composer({ settings }: { settings: AppSettings }) {
   return (
     <section id="composer" className="card min-w-0 overflow-hidden p-4 sm:p-6">
       <div className="mb-4">
-        <div className="text-[11px] font-semibold tracking-[0.18em] text-gold uppercase">יצירת בדיקה</div>
-        <h2 className="mt-1 text-xl font-bold text-navy sm:text-2xl">מה צריך לבדוק היום?</h2>
-        <p className="mt-1 text-sm text-muted">
-          כתבו בשפה חופשית את החדרים ואת הבדיקות. המערכת תזהה לבד ותבנה טבלה.
-        </p>
+        <div className="text-[11px] font-semibold tracking-[0.18em] text-gold uppercase">{t('composer.kicker')}</div>
+        <h2 className="mt-1 text-xl font-bold text-navy sm:text-2xl">{t('composer.title')}</h2>
+        <p className="mt-1 text-sm text-muted">{t('composer.lead')}</p>
       </div>
 
       <textarea
@@ -81,21 +80,21 @@ export function Composer({ settings }: { settings: AppSettings }) {
         onChange={(e) => setText(e.target.value)}
         rows={6}
         className="field min-h-36 resize-y text-base leading-7"
-        placeholder={EXAMPLE}
+        placeholder={example}
       />
 
       {(parsed.rooms.length > 0 || parsed.checks.length > 0 || parsed.allRooms) && (
         <div className="mt-3 space-y-2 text-sm">
           <div>
-            <span className="text-muted">חדרים שזוהו: </span>
-            {(parsed.allRooms ? ['כל חדרי המלון'] : parsed.rooms).map((room) => (
+            <span className="text-muted">{t('composer.roomsFound')} </span>
+            {(parsed.allRooms ? [t('composer.allHotelRooms')] : parsed.rooms).map((room) => (
               <span key={room} className="ml-1 inline-block rounded-md bg-cream px-2 py-0.5 text-xs font-semibold text-navy">
                 {room}
               </span>
             ))}
           </div>
           <div>
-            <span className="text-muted">בדיקות שזוהו: </span>
+            <span className="text-muted">{t('composer.checksFound')} </span>
             {parsed.checks.map((check) => (
               <span key={check} className="ml-1 inline-block rounded-md bg-gold/15 px-2 py-0.5 text-xs font-semibold text-navy">
                 {check}
@@ -107,43 +106,43 @@ export function Composer({ settings }: { settings: AppSettings }) {
 
       <div className="mt-4 grid grid-cols-1 gap-2 min-[380px]:grid-cols-2 lg:flex lg:flex-wrap">
         <button type="button" onClick={applyParse} className="btn-primary w-full lg:w-auto">
-          זהה חדרים ובדיקות
+          {t('composer.identify')}
         </button>
         <button type="button" onClick={() => setManual(true)} className="btn-secondary w-full lg:w-auto">
-          בנייה ידנית
+          {t('composer.manual')}
         </button>
         <Link to="/templates" className="btn-secondary w-full lg:w-auto">
-          טען תבנית
+          {t('composer.loadTemplate')}
         </Link>
         <button
           type="button"
           onClick={() => {
             setFormDirty(false)
-            setText(EXAMPLE)
-            const result = parseInspectionRequest(EXAMPLE)
+            setText(example)
+            const result = parseInspectionRequest(example)
             setRooms(result.rooms)
             setChecks(result.checks)
-            setName(suggestInspectionName(result.checks))
+            setName(suggestInspectionName(result.checks, Date.now(), locale))
           }}
           className="btn-ghost w-full lg:w-auto"
         >
-          טען דוגמה
+          {t('composer.loadExample')}
         </button>
       </div>
 
       {(rooms.length > 0 || checks.length > 0 || parsed.rooms.length > 0 || manual) && (
         <div className="mt-5 space-y-4 rounded-[12px] border border-line bg-cream/60 p-3 sm:p-4">
           <label className="block text-sm font-semibold text-navy">
-            שם הבדיקה
+            {t('composer.inspectionName')}
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
               className="field mt-1 font-medium"
-              placeholder="למשל בדיקת מזגנים"
+              placeholder={t('composer.namePlaceholder')}
             />
           </label>
           <div>
-            <div className="mb-2 text-sm font-semibold text-navy">חדרים</div>
+            <div className="mb-2 text-sm font-semibold text-navy">{t('composer.rooms')}</div>
             <RoomPicker
               hotelRooms={hotelRooms}
               value={rooms}
@@ -154,7 +153,7 @@ export function Composer({ settings }: { settings: AppSettings }) {
             />
           </div>
           <div>
-            <div className="mb-2 text-sm font-semibold text-navy">עמודות בדיקה</div>
+            <div className="mb-2 text-sm font-semibold text-navy">{t('composer.columns')}</div>
             <CheckEditor
               value={checks}
               onChange={(next) => {
@@ -169,7 +168,7 @@ export function Composer({ settings }: { settings: AppSettings }) {
             onClick={create}
             className="btn-primary w-full py-3 text-base"
           >
-            {busy ? 'יוצר טבלה...' : 'צור טבלת עבודה'}
+            {busy ? t('composer.creating') : t('composer.create')}
           </button>
         </div>
       )}

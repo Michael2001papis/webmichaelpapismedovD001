@@ -9,6 +9,7 @@
  */
 
 import Dexie, { type Table } from 'dexie'
+import { t } from '../i18n'
 import type { AppSettings, CheckColumn, Inspection, StatusDefinition, Template } from '../types'
 import { uid } from './id'
 import { uniqueRooms } from './rooms'
@@ -108,16 +109,17 @@ export async function createInspection(input: {
   name: string
   rooms: string[]
   checks: string[]
+  performer?: string
 }): Promise<string> {
   const settings = (await db.settings.get('main')) ?? DEFAULT_SETTINGS
   const id = uid()
   const now = Date.now()
   const inspection: Inspection = {
     id,
-    name: input.name.trim() || `בדיקה ${new Date(now).toLocaleDateString('he-IL')}`,
+    name: input.name.trim() || t('he', 'inspection.defaultName', { date: new Date(now).toLocaleDateString('he-IL') }),
     createdAt: now,
     updatedAt: now,
-    performer: settings.performer,
+    performer: input.performer?.trim() || settings.performer,
     hotel: settings.hotel,
     department: settings.department,
     rooms: uniqueRooms(input.rooms),

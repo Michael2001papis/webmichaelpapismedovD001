@@ -11,15 +11,17 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { Composer } from '../components/Composer'
 import { db, DEFAULT_SETTINGS } from '../lib/db'
+import { useSession } from '../lib/sessionContext'
 
 export function NewInspectionPage() {
+  const { t } = useSession()
   const settings = useLiveQuery(() => db.settings.get('main')) ?? DEFAULT_SETTINGS
 
   return (
-    <div className="space-y-5">
+    <div className="holikar-stack space-y-5">
       <div>
-        <h1 className="text-xl font-bold text-navy sm:text-2xl md:text-3xl">בדיקה חדשה</h1>
-        <p className="mt-1 text-sm text-muted">כתבו בשפה חופשית מה לבדוק — Holikar תבנה את טבלת העבודה.</p>
+        <h1 className="text-xl font-bold text-navy sm:text-2xl md:text-3xl">{t('new.title')}</h1>
+        <p className="mt-1 text-sm text-muted">{t('new.lead')}</p>
       </div>
       <Composer settings={settings} />
     </div>

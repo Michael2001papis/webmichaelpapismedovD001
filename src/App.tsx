@@ -9,9 +9,11 @@
  */
 
 import { HashRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { EntryScreen } from './components/EntryScreen'
 import { Layout } from './components/Layout'
 import { MaintenanceScreen } from './components/MaintenanceScreen'
 import { SITE_ENABLED } from './config/siteStatus'
+import { SessionProvider, useSession } from './lib/sessionContext'
 import { ArchivePage } from './pages/ArchivePage'
 import { HomePage } from './pages/HomePage'
 import { InspectionPage } from './pages/InspectionPage'
@@ -21,7 +23,18 @@ import { SettingsPage } from './pages/SettingsPage'
 import { TemplatesPage } from './pages/TemplatesPage'
 
 export default function App() {
+  return (
+    <SessionProvider>
+      <AppBody />
+    </SessionProvider>
+  )
+}
+
+function AppBody() {
+  const { session } = useSession()
+
   if (!SITE_ENABLED) return <MaintenanceScreen />
+  if (!session) return <EntryScreen />
 
   return (
     <HashRouter>
